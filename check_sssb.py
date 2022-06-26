@@ -26,6 +26,14 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--headless", action="store_true",
                         help="headless run browser")
+    parser.add_argument("--get_url", action="store_true",
+                        help="get SSSB apartment urls")
+    parser.add_argument("--get_info", action="store_true",
+                        help="get SSSB apartment info and status")
+    parser.add_argument("--endless", action="store_true",
+                        help="endless crawling")
+    parser.add_argument("--crawl_interval", type=int, default=3600,
+                        help="crawling interval seconds")
     parser.add_argument("--credit_day_begin", type=str, default="2000-01-01",
                         help="set a date when credit days begin to accumulate")
     parser.add_argument("--debug", action="store_true")
@@ -42,10 +50,9 @@ class SSSBWebSpider(object):
         self.wait = WebDriverWait(self.browser, 20)
         self.apartment_urls = []
 
-    def get_info(self):
+    def get_urls(self):
         self.get_apartment_urls(self.apartments_url)
         self.get_apartment_urls(self.new_apartments_url)
-        self.check_apartment_urls()
 
     def get_apartment_urls(self, url):
         self.browser.get(url)
@@ -189,69 +196,50 @@ class SSSBWebSpider(object):
 
 
 
-#def get_url(url, retry_limit=10, use_proxy=True):
-#    for _ in range(retry_limit):
-#        headers = {"User-Agent": UserAgent(path="../fake_useragent_0.1.11.json").random}
-#        if use_proxy:
-#            proxy = "127.0.0.1:1080"
-#            #proxies = {
-#            #    "http": "http://%(proxy)s/" % {'proxy': proxy},
-#            #    "https": "https://%(proxy)s/" % {'proxy': proxy}
-#            #    }
-#            proxies = {
-#                "all": "socks5://%(proxy)s/" % {'proxy': proxy},
-#                    }
-#            try:
-#                response = requests.get(url, headers=headers, proxies=proxies, timeout=5)
-#            except Exception as e:
-#                if args.debug:
-#                    print("get_url error {}".format(e))
-#                continue
-#        else:
-#            try:
-#                response = requests.get(url, headers=headers)
-#            except Exception as e:
-#                if args.debug:
-#                    print("get_url error {}".format(e))
-#                continue
-#        response.encoding = "utf-8"
-#        json_text = response.text
-#        soup = BeautifulSoup(json_text, 'html.parser')
-#        break
-#    else:
-#        print("Reach Limit when get {}".format(url))
-#        raise NameError("Reach Limit when get {}".format(url))
-#    return soup
-
-
-
-
-
 def main(args):
-    #options = webdriver.FirefoxOptions()
     options = webdriver.ChromeOptions()
     options.headless = args.headless
-    #options.add_argument('--disable-gpu')
-    #options.set_preference('network.proxy.socks_remote_dns', True)
-    #options.set_preference('network.proxy.http', '127.0.0.1')
-    #options.set_preference('network.proxy.http_port', 8118)
-    #options.set_preference('network.proxy.ssl', '127.0.0.1')
-    #options.set_preference('network.proxy.ssl_port', 8118)
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--remote-debugging-port=9515")
     options.add_argument("--proxy-server=127.0.0.1:8118")
 
-
-    #browser = webdriver.Firefox(options=options)
     browser = webdriver.Chrome(options=options)
 
-    #browser.get("https://twitter.com")
-    #ipdb.set_trace()
     spider = SSSBWebSpider(browser)
 
     date_begin = datetime.strptime(args.credit_day_begin, "%Y-%m-%d")
-    spider.get_info()
+
+    if args.get_url:
+        if args.endless:
+            while True:
+                start_time = time.time()
+                spider.get_urls()
+                end_time = time.time()
+                time_used = end_time - start_time
+                if time_used < args.crawl_interval:
+                    restart_time = (datetime.now() + \
+                                    timedelta(seconds=args.crawl_interval - time_used)).strftime("%Y-%m-%d %H:%M:%S")
+                    print("Sleep {:5.3f}s, Restart at {}".format(args.crawl_interval - time_used, restart_time))
+                    time.sleep(args.crawl_interval - time_used)
+        else:
+            spider.get_urls()
+    elif args.get_info:
+        if args.endless:
+            while True:
+                start_time = time.time()
+                spider.check_apartment_urls()
+                end_time = time.time()
+                time_used = end_time - start_time
+                if time_used < args.crawl_interval:
+                    restart_time = (datetime.now() + \
+                                    timedelta(seconds=args.crawl_interval - time_used)).strftime("%Y-%m-%d %H:%M:%S")
+                    print("Sleep {:5.3f}s, Restart at {}".format(args.crawl_interval - time_used, restart_time))
+                    time.sleep(args.crawl_interval - time_used)
+        else:
+            spider.check_apartment_urls()
+    else:
+        print("Please select a function")
 
 
 if __name__ == "__main__":
