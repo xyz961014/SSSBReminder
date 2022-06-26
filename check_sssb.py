@@ -107,13 +107,13 @@ class SSSBWebSpider(object):
         for button in buttons:
             button_name = button.text
             button_url = button.get_attribute("href")
-            r = requests.get(button_url) 
             resource_name = "./resources/{}_{}.pdf".format(object_number, button_name) 
-            if button_name == "APARTMENT DRAWING":
-                apartment_drawing = resource_name 
-            elif button_name == "FLOOR DRAWING":
-                floor_drawing = resource_name 
             if not os.path.exists(resource_name):
+                r = requests.get(button_url) 
+                if button_name == "APARTMENT DRAWING":
+                    apartment_drawing = resource_name 
+                elif button_name == "FLOOR DRAWING":
+                    floor_drawing = resource_name 
                 with open(resource_name, "wb") as code:
                      code.write(r.content)
 
