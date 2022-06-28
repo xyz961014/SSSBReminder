@@ -36,6 +36,8 @@ def parse_args():
                         help="endless crawling")
     parser.add_argument("--crawl_interval", type=int, default=3600,
                         help="crawling interval seconds")
+    parser.add_argument("--max_retry", type=int, default=5,
+                        help="retry when not crawled")
     parser.add_argument("--credit_day_begin", type=str, default="2000-01-01",
                         help="set a date when credit days begin to accumulate")
     parser.add_argument("--debug", action="store_true")
@@ -84,15 +86,87 @@ class SSSBWebSpider(object):
                                           max_4_years=max_4_years_tag)
                 url_object.save()
 
+
     def check_apartment_urls(self):
         uncrawled_urls = ApartmentURL.find_many({"crawled": False})
         for url_item in tqdm(uncrawled_urls, desc="Checking apartments"):
-            self.check_apartment(url_item)
+            self.check_apartment_url(url_item)
 
-    def check_apartment(self, url_item):
+
+    def check_apartment_url(self, url_item):
         url = url_item.url
-        self.browser.execute_script("window.open();")
-        self.browser.switch_to.window(self.browser.window_handles[-1]) 
+        (name, 
+         object_number, 
+         housing_area, 
+         address, 
+         accommodation_type, 
+         living_space, 
+         monthly_rent, 
+         valid_from, 
+         end_date, 
+         floor_drawing,
+         apartment_drawing,
+         ddl,
+         queue_len,
+         most_credit) = self.get_url_info(url)
+        if ApartmentInfo.find_one({"object_number": object_number}) is None:
+            # add new apartment
+            info_item = ApartmentInfo(name=name,
+                                      object_number=object_number,
+                                      url=url,
+                                      housing_area=housing_area,
+                                      address=address,
+                                      accommodation_type=accommodation_type,
+                                      living_space=living_space,
+                                      monthly_rent=monthly_rent,
+                                      valid_from=valid_from,
+                                      end_date=end_date,
+                                      floor_drawing=floor_drawing,
+                                      apartment_drawing=apartment_drawing,
+                                      application_ddl=ddl,
+                                      electricity_include=url_item.electricity_include,
+                                      rent_free_june_and_july=url_item.rent_free_june_and_july,
+                                      max_4_years=url_item.max_4_years
+                                      )
+            info_item.save()
+        #else:
+        #    # update apartment info
+        #    info_item = ApartmentInfo.find_one({"object_number": object_number})
+
+        status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
+        status_item.save()
+
+        url_item.crawled = True
+        url_item.save()
+
+
+    def update_apartment_status(self):
+        apartments = ApartmentInfo.find_many({})
+        for apartment in tqdm(apartments, desc="Checking apartment status"):
+            url = apartment.url
+            (name, 
+             object_number, 
+             housing_area, 
+             address, 
+             accommodation_type, 
+             living_space, 
+             monthly_rent, 
+             valid_from, 
+             end_date, 
+             floor_drawing,
+             apartment_drawing,
+             ddl,
+             queue_len,
+             most_credit) = self.get_url_info(url)
+
+            status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
+            status_item.save()
+
+
+
+    def get_url_info(self, url):
+        #self.browser.execute_script("window.open();")
+        #self.browser.switch_to.window(self.browser.window_handles[-1]) 
         self.browser.get(url)
         
         self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'h1')))
@@ -164,37 +238,24 @@ class SSSBWebSpider(object):
         end_date = attributes["The rental agreement ends:"] \
                    if "The rental agreement ends:" in attributes.keys() else None
 
-        if ApartmentInfo.find_one({"object_number": object_number}) is None:
-            # add new apartment
-            info_item = ApartmentInfo(name=name,
-                                      object_number=object_number,
-                                      housing_area=housing_area,
-                                      address=address,
-                                      accommodation_type=accommodation_type,
-                                      living_space=living_space,
-                                      monthly_rent=monthly_rent,
-                                      valid_from=valid_from,
-                                      end_date=end_date,
-                                      floor_drawing=floor_drawing,
-                                      apartment_drawing=apartment_drawing,
-                                      application_ddl=ddl,
-                                      electricity_include=url_item.electricity_include,
-                                      rent_free_june_and_july=url_item.rent_free_june_and_july,
-                                      max_4_years=url_item.max_4_years
-                                      )
-            info_item.save()
-        #else:
-        #    # update apartment info
-        #    info_item = ApartmentInfo.find_one({"object_number": object_number})
+        #self.browser.close()
+        #self.browser.switch_to.window(self.browser.window_handles[-1]) 
 
-        status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
-        status_item.save()
+        return (name, 
+                object_number, 
+                housing_area, 
+                address, 
+                accommodation_type, 
+                living_space, 
+                monthly_rent, 
+                valid_from, 
+                end_date, 
+                floor_drawing,
+                apartment_drawing,
+                ddl,
+                queue_len,
+                most_credit)
 
-        url_item.crawled = True
-        url_item.save()
-
-        self.browser.close()
-        self.browser.switch_to.window(self.browser.window_handles[-1]) 
 
     def quit(self):
         self.browser.quit()
@@ -215,13 +276,17 @@ def main(args):
         if args.endless:
             while True:
                 start_time = time.time()
-                try:
-                    browser = webdriver.Chrome(options=options)
-                    spider = SSSBWebSpider(browser)
-                    spider.get_urls()
-                    spider.quit()
-                except Exception as e:
-                    print("Error occurs: ", e)
+                success = False
+                for _ in range(args.max_retry):
+                    try:
+                        if not success:
+                            browser = webdriver.Chrome(options=options)
+                            spider = SSSBWebSpider(browser)
+                            spider.get_urls()
+                            spider.quit()
+                            success = True
+                    except Exception as e:
+                        print("Error occurs: ", e)
                 end_time = time.time()
                 time_used = end_time - start_time
                 if time_used < args.crawl_interval:
@@ -241,13 +306,17 @@ def main(args):
         if args.endless:
             while True:
                 start_time = time.time()
-                try:
-                    browser = webdriver.Chrome(options=options)
-                    spider = SSSBWebSpider(browser)
-                    spider.check_apartment_urls()
-                    spider.quit()
-                except Exception as e:
-                    print("Error occurs: ", e)
+                success = False
+                for _ in range(args.max_retry):
+                    try:
+                        if not success:
+                            browser = webdriver.Chrome(options=options)
+                            spider = SSSBWebSpider(browser)
+                            spider.check_apartment_urls()
+                            spider.quit()
+                            success = True
+                    except Exception as e:
+                        print("Error occurs: ", e)
                 end_time = time.time()
                 time_used = end_time - start_time
                 if time_used < args.crawl_interval:
@@ -262,6 +331,36 @@ def main(args):
             spider = SSSBWebSpider(browser)
             spider.check_apartment_urls()
             spider.quit()
+    elif args.update_status:
+        if args.endless:
+            while True:
+                start_time = time.time()
+                success = False
+                for _ in range(args.max_retry):
+                    try:
+                        if not success:
+                            browser = webdriver.Chrome(options=options)
+                            spider = SSSBWebSpider(browser)
+                            spider.update_apartment_status()
+                            spider.quit()
+                            success = True
+                    except Exception as e:
+                        print("Error occurs: ", e)
+                end_time = time.time()
+                time_used = end_time - start_time
+                if time_used < args.crawl_interval:
+                    restart_time = (datetime.now() + \
+                                    timedelta(seconds=args.crawl_interval - time_used)).strftime("%Y-%m-%d %H:%M:%S")
+                    print("Sleep {:5.3f}s, Restart at {}".format(args.crawl_interval - time_used, restart_time))
+                    time.sleep(args.crawl_interval - time_used)
+                else:
+                    print("No sleep, Restart at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        else:
+            browser = webdriver.Chrome(options=options)
+            spider = SSSBWebSpider(browser)
+            spider.update_apartment_status()
+            spider.quit()
+
     else:
         print("Please select a function")
 

@@ -77,6 +77,7 @@ class ApartmentInfo(SSSBItem):
     _collection = db["apartment_info"]
     def __init__(self, name, 
                       object_number, 
+                      url,
                       housing_area=None,
                       address=None, 
                       accommodation_type=None,
@@ -95,6 +96,7 @@ class ApartmentInfo(SSSBItem):
         self._collection = db["apartment_info"]
         self.name = name
         self.object_number = object_number
+        self.url = url
         self.housing_area = housing_area
         self.address = address
         self.accommodation_type = accommodation_type
