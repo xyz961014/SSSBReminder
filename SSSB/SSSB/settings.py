@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-%4f5_21_)1x72ap(zgbyiojnu8-=*%o6dcphj%c#(+hp9)cade
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["sssb.thufootball.tech", "39.103.140.113"]
+ALLOWED_HOSTS = ["sssb.thufootball.tech", "localhost"]
 
 
 # Application definition

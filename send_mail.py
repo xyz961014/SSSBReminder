@@ -88,9 +88,9 @@ def main(args):
     #     part_attach1.add_header('Content-Disposition', 'attachment', filename=t.rsplit('\\', 1)[1])  # 为附件命名
     #     msg.attach(part_attach1)  # 添加附件
 
-    sendmail(receivers, msg)
+    send_mail(receivers, msg)
 
-def sendmail(receivers, msg):
+def send_mail(receivers, msg):
     try:
         # 若需要加密使用SSL，可以这样创建client
         # client = smtplib.SMTP_SSL('smtpdm.aliyun.com', 465)
