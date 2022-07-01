@@ -106,6 +106,7 @@ class ApartmentInfo(SSSBItem):
         self.end_date = end_date
         self.floor_drawing = floor_drawing
         self.apartment_drawing = apartment_drawing
+        self.application_ddl = application_ddl
         self.electricity_include = electricity_include
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years

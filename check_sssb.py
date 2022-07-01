@@ -34,7 +34,7 @@ def parse_args():
                         help="update SSSB apartment status")
     parser.add_argument("--endless", action="store_true",
                         help="endless crawling")
-    parser.add_argument("--crawl_interval", type=int, default=3600,
+    parser.add_argument("--crawl_interval", type=int, default=1800,
                         help="crawling interval seconds")
     parser.add_argument("--max_retry", type=int, default=5,
                         help="retry when not crawled")
