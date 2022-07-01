@@ -2,22 +2,31 @@
 from django.http import HttpResponse
 from jinja2 import Environment, FileSystemLoader
 from pyecharts.globals import CurrentConfig
-
-CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("/home/projects/SSSBReminder/SSSB/SSSB/templates"))
-
 from pyecharts import options as opts
 from pyecharts.charts import Bar, Line
 
 from datetime import date, datetime
 import pymongo
 
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+import socket
+hostname = socket.gethostname()
+
+template_path = "/home/projects/SSSBReminder/SSSB/SSSB/templates"
+if hostname == "xyz-ENVY-15":
+    template_path = "/home/xyz/Documents/Projects/web_check/SSSBReminder/SSSB/SSSB/templates"
+
+CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
+
+
+mongo_path = "mongodb://localhost:27017"
+if hostname == "xyz-ENVY-15":
+    mongo_path = "mongodb://localhost:1027"
+client = pymongo.MongoClient(mongo_path)
 db = client["SSSB"]
 url_collection = db["apartment_url"]
 info_collection = db["apartment_info"]
 status_collection = db["apartment_status"]
 
-# http://127.0.0.1:8000/demo/
 def hello(request):
 
     urls = url_collection.find()
