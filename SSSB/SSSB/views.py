@@ -49,6 +49,10 @@ def hello(request):
                 counts.append(count)
             count = 1
             current_hour = hour_time
+    else:
+        if current_hour is not None:
+            times.append(current_hour.strftime("%Y-%m-%d %H:%M:%S"))
+            counts.append(count)
     
     c = (
         Line(init_opts=opts.InitOpts(width="1600px", height="800px"))
