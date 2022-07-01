@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from jinja2 import Environment, FileSystemLoader
 from pyecharts.globals import CurrentConfig
 
-CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./SSSB/templates"))
+CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("/home/projects/SSSBReminder/SSSB/SSSB/templates"))
 
 from pyecharts import options as opts
 from pyecharts.charts import Bar, Line
