@@ -3,7 +3,10 @@ from django.http import HttpResponse
 from jinja2 import Environment, FileSystemLoader
 from pyecharts.globals import CurrentConfig
 from pyecharts import options as opts
-from pyecharts.charts import Bar, Line
+from pyecharts.charts import Bar, Grid, Line, Liquid, Page, Pie
+from pyecharts.commons.utils import JsCode
+from pyecharts.components import Table
+from pyecharts.faker import Faker
 
 from datetime import date, datetime
 import pymongo
@@ -12,7 +15,7 @@ import os
 import sys
 curr_path = os.path.split(os.path.realpath(__file__))[0]
 sys.path.append(os.path.join(curr_path, "../.."))
-from sssb_item import ApartmentInfo, ApartmentURL, ApartmentStatus
+from sssb_item import ApartmentInfo, ApartmentURL, ApartmentStatus, ApartmentAmount
 
 import socket
 hostname = socket.gethostname()
@@ -33,35 +36,62 @@ CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
 #info_collection = db["apartment_info"]
 #status_collection = db["apartment_status"]
 
-def hello(request):
+def index(request):
 
-    urls = ApartmentURL.find_many()
+    input_area = """
+   <head>
+      <title>Bootstrap 模板</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+   </head>
+   <body>
+       <div style="padding: 100px 100px 10px;">
+           <form method="get">
+               <div class="row">
+                   <div class="col-lg-6">
+                       <div class="input-group">
+                           <span class="input-group-addon">Object number</span> 
+                           <input name="object_number" type="text" class="form-control">
+                           <span class="input-group-btn">
+                               <button class="btn btn-default" type="submit">
+                               Go!
+                               </button>
+                           </span>
+                       </div>
+                   </div>
+               </div>
+           </form>
+       </div>
+   </body>
+                 """
+    page = Page(layout=Page.SimplePageLayout)
+    amount_line = get_amount_line()
+    object_number = request.GET.get("object_number", None)
+    if object_number is not None:
+        object_line = get_apartment_line(object_number)
+        page.add(
+            amount_line,
+            object_line
+                )
+    else:
+        page.add(
+            amount_line,
+                )
+    return HttpResponse(input_area + page.render_embed())
+
+
+
+# Charts
+
+def get_amount_line():
+    amounts = ApartmentAmount.find_many()
     times = []
     counts = []
-    current_hour = None
-    count = 0
-    for url in urls:
-        url_time = datetime.strptime(url.update_time, "%Y-%m-%d %H:%M:%S")
-        hour_time = datetime(year=url_time.year, 
-                             month=url_time.month,
-                             day=url_time.day,
-                             hour=url_time.hour,
-                             )
-        if hour_time == current_hour:
-            count += 1
-        else:
-            if current_hour is not None:
-                times.append(current_hour.strftime("%Y-%m-%d %H:%M:%S"))
-                counts.append(count)
-            count = 1
-            current_hour = hour_time
-    else:
-        if current_hour is not None:
-            times.append(current_hour.strftime("%Y-%m-%d %H:%M:%S"))
-            counts.append(count)
-    
+    for amount in amounts:
+        times.append(amount.update_time)
+        counts.append(amount.amount)
     c = (
-        Line(init_opts=opts.InitOpts(width="1600px", height="800px"))
+        Line(init_opts=opts.InitOpts())
         .add_xaxis(xaxis_data=times)
         .add_yaxis(
             series_name="Number of available apartments",
@@ -72,30 +102,52 @@ def hello(request):
                     opts.MarkPointItem(type_="min", name="最小值"),
                 ]
             ),
-            #markline_opts=opts.MarkLineOpts(
-            #    data=[opts.MarkLineItem(type_="average", name="平均值")]
-            #),
         )
-        #.add_yaxis(
-        #    series_name="最低气温",
-        #    y_axis=low_temperature,
-        #    markpoint_opts=opts.MarkPointOpts(
-        #        data=[opts.MarkPointItem(value=-2, name="周最低", x=1, y=-1.5)]
-        #    ),
-        #    markline_opts=opts.MarkLineOpts(
-        #        data=[
-        #            opts.MarkLineItem(type_="average", name="平均值"),
-        #            opts.MarkLineItem(symbol="none", x="90%", y="max"),
-        #            opts.MarkLineItem(symbol="circle", type_="max", name="最高点"),
-        #        ]
-        #    ),
-        #)
         .set_global_opts(
-            title_opts=opts.TitleOpts(title="SSSB展示", subtitle="测试"),
+            title_opts=opts.TitleOpts(title="Available apartments", subtitle=""),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
             toolbox_opts=opts.ToolboxOpts(is_show=True),
             xaxis_opts=opts.AxisOpts(type_="category", boundary_gap=False),
         )
     )
-    return HttpResponse(c.render_embed())
+    return c
+
+def get_apartment_line(object_number):
+    statuses = ApartmentStatus.find_many({"object_number": object_number})
+    times = []
+    queue_lens = []
+    credits = []
+    for status in statuses:
+        times.append(status.update_time)
+        queue_lens.append(status.queue_len)
+        credits.append(status.most_credit)
+    c = (
+        Line(init_opts=opts.InitOpts())
+        .add_xaxis(xaxis_data=times)
+        .add_yaxis(
+            series_name="Queue length",
+            y_axis=queue_lens,
+            markpoint_opts=opts.MarkPointOpts(
+                data=[
+                ]
+            ),
+        )
+        .add_yaxis(
+            series_name="Most credits",
+            y_axis=credits,
+            markpoint_opts=opts.MarkPointOpts(
+                data=[
+                    opts.MarkPointItem(type_="max", name="最大值"),
+                ]
+            ),
+        )
+        .set_global_opts(
+            title_opts=opts.TitleOpts(title="Apartment Status", subtitle=object_number),
+            tooltip_opts=opts.TooltipOpts(trigger="axis"),
+            toolbox_opts=opts.ToolboxOpts(is_show=True),
+            xaxis_opts=opts.AxisOpts(type_="category", boundary_gap=False),
+        )
+    )
+    return c
+
 
