@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from datetime import date, datetime, timedelta
-from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus
+from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus, ApartmentAmount
 import requests 
 import time
 import random
@@ -55,8 +55,10 @@ class SSSBWebSpider(object):
         self.apartment_urls = []
 
     def get_urls(self):
-        self.get_apartment_urls(self.apartments_url)
-        self.get_apartment_urls(self.new_apartments_url)
+        amount1 = self.get_apartment_urls(self.apartments_url)
+        amount2 = self.get_apartment_urls(self.new_apartments_url)
+        apartment_amount = ApartmentAmount(amount=amount1+amount2)
+        apartment_amount.save()
 
     def get_apartment_urls(self, url):
         self.browser.get(url)
@@ -84,6 +86,8 @@ class SSSBWebSpider(object):
                                       rent_free_june_and_july=free_june_july_tag,
                                       max_4_years=max_4_years_tag)
             url_object.save()
+
+        return len(available_apartments)
 
 
     def check_apartment_urls(self):

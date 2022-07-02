@@ -4,8 +4,14 @@ import pymongo
 import ipdb
 import time
 from datetime import date, datetime
+import pytz
 
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+import socket
+hostname = socket.gethostname()
+mongo_path = "mongodb://localhost:27017"
+if hostname == "xyz-ENVY-15":
+    mongo_path = "mongodb://localhost:1027"
+client = pymongo.MongoClient(mongo_path)
 db = client["SSSB"]
 
 class SSSBItem(object):
@@ -33,6 +39,7 @@ class SSSBItem(object):
         if one is not None:
             item = cls(**one)
             item._id = one["_id"]
+            item.update_time = one["update_time"]
         else:
             item = None
         return item
@@ -44,6 +51,7 @@ class SSSBItem(object):
         for one in many:
             item = cls(**one)
             item._id = one["_id"]
+            item.update_time = one["update_time"]
             items.append(item)
         return items
 
@@ -111,6 +119,15 @@ class ApartmentInfo(SSSBItem):
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years
 
+    def is_active(self):
+        sweden_timezone = pytz.timezone('Europe/Stockholm')
+        now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
+        ddl = datetime.strptime(self.application_ddl, "%Y-%m-%d %H:%M:%S")
+        ddl_time = datetime(ddl.year, ddl.month, ddl.day, 
+                            ddl.hour, ddl.minute, ddl.second,
+                            tzinfo=sweden_timezone)
+        return ddl_time > now_time
+
 
 class ApartmentStatus(SSSBItem):
     _collection = db["apartment_status"]
@@ -120,6 +137,14 @@ class ApartmentStatus(SSSBItem):
         self.object_number = object_number
         self.queue_len = queue_len
         self.most_credit = most_credit
+
+
+class ApartmentAmount(SSSBItem):
+    _collection = db["apartment_amount"]
+    def __init__(self, amount, **kwargs):
+        super().__init__()
+        self._collection = db["apartment_amount"]
+        self.amount = amount
 
 
 def get_now_time():

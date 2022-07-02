@@ -8,6 +8,12 @@ from pyecharts.charts import Bar, Line
 from datetime import date, datetime
 import pymongo
 
+import os
+import sys
+curr_path = os.path.split(os.path.realpath(__file__))[0]
+sys.path.append(os.path.join(curr_path, "../.."))
+from sssb_item import ApartmentInfo, ApartmentURL, ApartmentStatus
+
 import socket
 hostname = socket.gethostname()
 
@@ -18,24 +24,24 @@ if hostname == "xyz-ENVY-15":
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
 
 
-mongo_path = "mongodb://localhost:27017"
-if hostname == "xyz-ENVY-15":
-    mongo_path = "mongodb://localhost:1027"
-client = pymongo.MongoClient(mongo_path)
-db = client["SSSB"]
-url_collection = db["apartment_url"]
-info_collection = db["apartment_info"]
-status_collection = db["apartment_status"]
+#mongo_path = "mongodb://localhost:27017"
+#if hostname == "xyz-ENVY-15":
+#    mongo_path = "mongodb://localhost:1027"
+#client = pymongo.MongoClient(mongo_path)
+#db = client["SSSB"]
+#url_collection = db["apartment_url"]
+#info_collection = db["apartment_info"]
+#status_collection = db["apartment_status"]
 
 def hello(request):
 
-    urls = url_collection.find()
+    urls = ApartmentURL.find_many()
     times = []
     counts = []
     current_hour = None
     count = 0
     for url in urls:
-        url_time = datetime.strptime(url["update_time"], "%Y-%m-%d %H:%M:%S")
+        url_time = datetime.strptime(url.update_time, "%Y-%m-%d %H:%M:%S")
         hour_time = datetime(year=url_time.year, 
                              month=url_time.month,
                              day=url_time.day,
