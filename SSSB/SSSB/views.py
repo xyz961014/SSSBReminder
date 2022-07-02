@@ -9,6 +9,7 @@ from pyecharts.components import Table
 from pyecharts.faker import Faker
 
 from datetime import date, datetime
+import math
 import pymongo
 
 import os
@@ -40,7 +41,7 @@ def index(request):
 
     input_area = """
    <head>
-      <title>Bootstrap 模板</title>
+      <title>SSSB统计</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
    </head>
@@ -125,14 +126,6 @@ def get_apartment_line(object_number):
         Line(init_opts=opts.InitOpts())
         .add_xaxis(xaxis_data=times)
         .add_yaxis(
-            series_name="Queue length",
-            y_axis=queue_lens,
-            markpoint_opts=opts.MarkPointOpts(
-                data=[
-                ]
-            ),
-        )
-        .add_yaxis(
             series_name="Most credits",
             y_axis=credits,
             markpoint_opts=opts.MarkPointOpts(
@@ -141,11 +134,33 @@ def get_apartment_line(object_number):
                 ]
             ),
         )
+        .add_yaxis(
+            series_name="Queue length",
+            y_axis=queue_lens,
+            yaxis_index=1,
+            markpoint_opts=opts.MarkPointOpts(
+                data=[
+                ]
+            ),
+        )
+        .extend_axis(
+            yaxis=opts.AxisOpts(
+            name="Queue length",
+            name_location="start",
+            type_="value",
+            max_=math.ceil(max(queue_lens) / 5) * 10,
+            axistick_opts=opts.AxisTickOpts(is_show=True),
+            splitline_opts=opts.SplitLineOpts(is_show=True),
+            )
+        )
         .set_global_opts(
-            title_opts=opts.TitleOpts(title="Apartment Status", subtitle=object_number),
+            title_opts=opts.TitleOpts(title="Apartment Status", 
+                                      subtitle=object_number),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
             toolbox_opts=opts.ToolboxOpts(is_show=True),
             xaxis_opts=opts.AxisOpts(type_="category", boundary_gap=False),
+            yaxis_opts=opts.AxisOpts(name="Most credits", type_="value", 
+                                     max_=math.ceil(max(credits) / 100) * 100),
         )
     )
     return c
