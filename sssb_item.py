@@ -33,6 +33,17 @@ class SSSBItem(object):
         else:
             self._collection.update_one({"_id": self._id}, {"$set": obj})
 
+    def get_update_time(self, timezone="Europe/Stockholm"):
+        if timezone is None:
+            return self.update_time
+        timezone = pytz.timezone(timezone)
+        update_time = datetime.strptime(self.update_time, "%Y-%m-%d %H:%M:%S")
+        update_time = datetime(update_time.year, update_time.month, update_time.day, 
+                               update_time.hour, update_time.minute, update_time.second,
+                               tzinfo=pytz.timezone("Asia/Shanghai"))
+        update_time = timezone.normalize(update_time.astimezone(tz=timezone))
+        return update_time.strftime("%Y-%m-%d %H:%M:%S")
+
     @classmethod
     def find_one(cls, json_object={}):
         one = cls._collection.find_one(json_object)
