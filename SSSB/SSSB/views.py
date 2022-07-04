@@ -97,6 +97,7 @@ def get_amount_line():
         .add_yaxis(
             series_name="Number of available apartments",
             y_axis=counts,
+            is_symbol_show=False,
             markpoint_opts=opts.MarkPointOpts(
                 data=[
                     opts.MarkPointItem(type_="max", name="最大值"),
@@ -128,6 +129,7 @@ def get_apartment_line(object_number):
         .add_yaxis(
             series_name="Most credits",
             y_axis=credits,
+            is_symbol_show=False,
             markpoint_opts=opts.MarkPointOpts(
                 data=[
                     opts.MarkPointItem(type_="max", name="最大值"),
@@ -137,6 +139,7 @@ def get_apartment_line(object_number):
         .add_yaxis(
             series_name="Queue length",
             y_axis=queue_lens,
+            is_symbol_show=False,
             yaxis_index=1,
             markpoint_opts=opts.MarkPointOpts(
                 data=[
