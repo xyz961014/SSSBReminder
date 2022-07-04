@@ -45,8 +45,54 @@ def index(request):
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
    </head>
    <body>
+        <h2>SSSB Reminder</h2>
+        <div class="col-lg-12" style="padding: 20px;">
             <a class="btn btn-default" href="available_apartments">Available apartments</a>
             <a class="btn btn-default" href="apartment_status">Apartment status</a>
+        </div>
+<div class="col-lg-6" style="padding: 20px;">
+    <h3>Filter here</h3>
+    <form role="form">
+        <div class="form-group">
+           <label>E-mail</label>
+           <input type="text" class="form-control" name="email" placeholder="">
+        </div>
+        <div class="form-group">
+           <label >Region/Distance</label>
+           <input type="text" class="form-control"  placeholder="">
+        </div>
+        <div class="form-group">
+           <label for="inputfile">Floor</label>
+           <input type="text" class="form-control"  placeholder="">
+           <p class="help-block">这里是块级帮助文本</p>
+        </div>
+        <div class="form-group">
+           <label >Accommododation type</label>
+           <input type="text" class="form-control"  placeholder="">
+        </div>
+        <div class="form-group">
+           <label >Area</label>
+           <input type="text" class="form-control"  placeholder="">
+        </div>
+        <div class="form-group">
+           <label >Rent</label>
+           <input type="text" class="form-control"  placeholder="">
+        </div>
+        <div class="checkbox">
+           <label> <input type="checkbox"> Short rent </label>
+        </div>
+        <div class="checkbox">
+           <label> <input type="checkbox"> Electricity free </label>
+        </div>
+        <div class="checkbox">
+           <label> <input type="checkbox"> June & July free </label>
+        </div>
+        <div class="checkbox">
+           <label> <input type="checkbox"> Max 4 years </label>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </form>
+</div>
    </body>
                  """
     return HttpResponse(index_html)
