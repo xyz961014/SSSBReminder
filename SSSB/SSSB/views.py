@@ -265,7 +265,7 @@ def get_apartment_line(object_number):
             xaxis_opts=opts.AxisOpts(type_="category", boundary_gap=False),
             yaxis_opts=opts.AxisOpts(name="Most credits", type_="value", 
                                      max_=math.ceil(max(credits) / 100) * 100,
-                                     min_=math.floor(min(credits) / 100 - 1) * 100),
+                                     min_=max(math.floor(min(credits) / 100 - 1) * 100, 0)),
         )
     )
     return c
