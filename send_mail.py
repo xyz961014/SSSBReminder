@@ -44,10 +44,16 @@ def main(args):
     # 全部收信地址，包含抄送地址，单次发送不能超过60人
     #receivers = rcptto + rcptcc + rcptbcc
     receivers = rcptto
+
+    msg = build_message(rcptto, args.title, args.content, 
+                        rcptcc=rcptcc, rcptbcc=rcptbcc)
+    send_mail(receivers, msg)
+
+def build_message(rcptto, title, content, rcptcc=[], rcptbcc=[]):
     
     # 构建alternative结构
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = Header(args.title)
+    msg['Subject'] = Header(title)
     msg['From'] = formataddr(["SSSB Reminder", username])  # 昵称+发信地址(或代发)
     # list转为字符串
     msg['To'] = ",".join(rcptto)
@@ -78,7 +84,7 @@ def main(args):
     # msg.attach(textplain)
     
     # 构建alternative的text/html部分
-    texthtml = MIMEText(args.content, _subtype='html', _charset='UTF-8')
+    texthtml = MIMEText(content, _subtype='html', _charset='UTF-8')
     msg.attach(texthtml)
     
     #附件
@@ -88,7 +94,8 @@ def main(args):
     #     part_attach1.add_header('Content-Disposition', 'attachment', filename=t.rsplit('\\', 1)[1])  # 为附件命名
     #     msg.attach(part_attach1)  # 添加附件
 
-    send_mail(receivers, msg)
+    return msg
+
 
 def send_mail(receivers, msg):
     try:

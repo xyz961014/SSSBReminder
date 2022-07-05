@@ -5,6 +5,7 @@ import ipdb
 import time
 from datetime import date, datetime
 import pytz
+import json
 
 import socket
 hostname = socket.gethostname()
@@ -13,6 +14,8 @@ if hostname == "xyz-ENVY-15":
     mongo_path = "mongodb://localhost:1027"
 client = pymongo.MongoClient(mongo_path)
 db = client["SSSB"]
+
+from send_mail import send_mail, build_message
 
 class SSSBItem(object):
     def __init__(self):
@@ -29,7 +32,8 @@ class SSSBItem(object):
         self.update_time = get_now_time()
         obj = self.get_info()
         if self._id is None:
-            self._collection.insert_one(obj)
+            insert_res = self._collection.insert_one(obj)
+            self._id = insert_res.inserted_id
         else:
             self._collection.update_one({"_id": self._id}, {"$set": obj})
 
@@ -95,22 +99,22 @@ class ApartmentURL(SSSBItem):
 class ApartmentInfo(SSSBItem):
     _collection = db["apartment_info"]
     def __init__(self, name, 
-                      object_number, 
-                      url,
-                      housing_area=None,
-                      address=None, 
-                      accommodation_type=None,
-                      living_space=None, 
-                      monthly_rent=None, 
-                      valid_from=None, 
-                      end_date=None,
-                      floor_drawing=None,
-                      apartment_drawing=None,
-                      application_ddl=None,
-                      electricity_include=False,
-                      rent_free_june_and_july=False,
-                      max_4_years=False,
-                      **kwarg):
+                       object_number, 
+                       url,
+                       housing_area=None,
+                       address=None, 
+                       accommodation_type=None,
+                       living_space=None, 
+                       monthly_rent=None, 
+                       valid_from=None, 
+                       end_date=None,
+                       floor_drawing=None,
+                       apartment_drawing=None,
+                       application_ddl=None,
+                       electricity_include=False,
+                       rent_free_june_and_july=False,
+                       max_4_years=False,
+                       **kwarg):
         super().__init__()
         self._collection = db["apartment_info"]
         self.name = name
@@ -162,6 +166,39 @@ class ApartmentAmount(SSSBItem):
         super().__init__()
         self._collection = db["apartment_amount"]
         self.amount = amount
+
+
+class PersonalFilter(SSSBItem):
+    _collection = db["personal_filter"]
+    def __init__(self, email, regions, types, floor, space, rent, 
+                       distance=0,
+                       short_rent=False,
+                       electricity_include=False,
+                       rent_free_june_and_july=False,
+                       max_4_years=False,
+                       **kwargs):
+        super().__init__()
+        self._collection = db["personal_filter"]
+        self.active = True
+        self.email = email
+        self.regions = regions
+        self.types = types
+        self.floor = floor
+        self.space = space
+        self.rent = rent
+        self.distance = distance
+        self.short_rent = short_rent
+        self.electricity_include = electricity_include
+        self.rent_free_june_and_july = rent_free_june_and_july
+        self.max_4_years = max_4_years
+
+    def send_initial_mail(self):
+        receivers = [self.email]
+        link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+        msg = build_message(receivers, 
+                            title="SSSB Filter built",
+                            content=json.dumps(self.get_info(), indent=4) + link)
+        send_mail(receivers, msg)
 
 
 def get_now_time():

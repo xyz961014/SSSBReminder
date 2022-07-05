@@ -19,7 +19,7 @@
         </div>
         <div class="col-lg-6 col-sm-12" style="padding: 20px;">
             <h3>Filter here</h3>
-            <form role="form">
+            <form role="form" method="post">
                 <div class="form-group">
                     <label>E-mail</label>
                     <input type="text" class="form-control" name="email" placeholder="">
@@ -29,7 +29,8 @@
                     <label>Region/Distance</label>
                     <br>
                     {% for region in region_list %}
-                        <input type="checkbox"> {{ region.name }}
+                        <input name="region" type="checkbox" value="{{ region.name }}"> 
+                        {{ region.name }}
                     {% endfor %}
                 </div>
                 <div class="form-group">
@@ -38,20 +39,21 @@
                     <!--<input type="range" class="form-control"> -->
                     <div class="col-lg-1">FROM</div>
                     <div class="col-lg-2">
-                        <input type="number" class="form-control" value="0">
+                        <input name="floor_min" type="number" class="form-control" value="0">
                     </div>
                     <div class="col-lg-1">TO</div>
                     <div class="col-lg-2">
-                        <input type="number" class="form-control">
+                        <input name="floor_max" type="number" class="form-control">
                     </div>
-                    <input type="checkbox"> NOT SPECIFIED
+                    <input name="floor_unspecified" type="checkbox"> NOT SPECIFIED
                     <br>
                 </div>
                 <div class="form-group">
                     <label>Accommododation type</label>
                     <br>
                     {% for typ in type_list %}
-                        <input type="checkbox"> {{ typ.name }}
+                        <input name="type" type="checkbox" value="{{ typ.name }}"> 
+                        {{ typ.name }}
                         <br>
                     {% endfor %}
                 </div>
@@ -60,13 +62,13 @@
                     <br>
                     <div class="col-lg-1">FROM</div>
                     <div class="col-lg-2">
-                        <input type="number" class="form-control" value="{{ space_boundaries.min}}">
+                        <input name="space_min" type="number" class="form-control" value="{{ space_boundaries.min}}">
                     </div>
                     <div class="col-lg-1">TO</div>
                     <div class="col-lg-2">
-                        <input type="number" class="form-control" value="{{ space_boundaries.max}}">
+                        <input name="space_max" type="number" class="form-control" value="{{ space_boundaries.max}}">
                     </div>
-                    <input type="checkbox"> NOT SPECIFIED
+                    <input name="space_unspecified" type="checkbox"> NOT SPECIFIED
                     <br>
                 </div>
                 <div class="form-group">
@@ -74,31 +76,41 @@
                     <br>
                     <div class="col-lg-1">FROM</div>
                     <div class="col-lg-2">
-                        <input type="number" class="form-control" value="{{ rent_boundaries.min}}">
+                        <input name="rent_min" type="number" class="form-control" value="{{ rent_boundaries.min}}">
                     </div>
                     <div class="col-lg-1">TO</div>
                     <div class="col-lg-2">
-                        <input type="number" class="form-control" value="{{ rent_boundaries.max}}">
+                        <input name="rent_max" type="number" class="form-control" value="{{ rent_boundaries.max}}">
                     </div>
-                    <input type="checkbox"> NOT SPECIFIED
+                    <input name="rent_unspecified" type="checkbox"> NOT SPECIFIED
                     <br>
                 </div>
                 <div class="form-group">
                     <label>Other options</label>
                     <div class="checkbox">
-                        <label> <input type="checkbox"> Short rent </label>
+                        <label> <input name="short_rent" type="checkbox"> 
+                            Short rent 
+                        </label>
                     </div>
                     <div class="checkbox">
-                        <label> <input type="checkbox"> Electricity free </label>
+                        <label> <input name="electricity_include" type="checkbox"> 
+                            Electricity include 
+                        </label>
                     </div>
                     <div class="checkbox">
-                        <label> <input type="checkbox"> June & July free </label>
+                        <label> <input name="rent_free_june_and_july" type="checkbox"> 
+                            June & July free 
+                        </label>
                     </div>
                     <div class="checkbox">
-                        <label> <input type="checkbox"> Max 4 years </label>
+                        <label> <input name="max_4_years" type="checkbox"> 
+                            Max 4 years 
+                        </label>
                     </div>
                 </div>
-                <button class="btn btn-primary" type="submit">Submit</button>
+                <button class="btn btn-primary" type="submit">
+                    Submit
+                </button>
             </form>
         </div>
     </body>

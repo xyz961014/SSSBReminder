@@ -49,7 +49,7 @@ def parse_args():
 class SSSBWebSpider(object):
     def __init__(self, browser):
         self.apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/available-apartments/?pagination=0&paginationantal=0"
-        self.new_apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/new-constructions//?pagination=0&paginationantal=0"
+        self.new_apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/new-constructions/?pagination=0&paginationantal=0"
         self.browser = browser
         self.wait = WebDriverWait(self.browser, 20)
         self.apartment_urls = []

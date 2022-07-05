@@ -8,16 +8,19 @@ from pyecharts.charts import Bar, Grid, Line, Liquid, Page, Pie
 from pyecharts.commons.utils import JsCode
 from pyecharts.components import Table
 from pyecharts.faker import Faker
+from pprint import pprint
 
 from datetime import date, datetime
 import math
 import pymongo
+from bson import ObjectId
 
 import os
 import sys
 curr_path = os.path.split(os.path.realpath(__file__))[0]
 sys.path.append(os.path.join(curr_path, "../.."))
 from sssb_item import ApartmentInfo, ApartmentURL, ApartmentStatus, ApartmentAmount
+from sssb_item import PersonalFilter
 
 import socket
 hostname = socket.gethostname()
@@ -39,13 +42,71 @@ CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
 #status_collection = db["apartment_status"]
 
 def index(request):
-    data = {
+    email = request.POST.get("email", None)
+    if email is not None:
+        regions = request.POST.getlist("region", [])
+        types = request.POST.getlist("type", [])
+        floor_min = request.POST.get("floor_min", None)
+        floor_max = request.POST.get("floor_max", None)
+        floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
+        space_min = request.POST.get("space_min", None)
+        space_max = request.POST.get("space_max", None)
+        space_unspecified = request.POST.get("space_unspecified", None) == "on"
+        rent_min = request.POST.get("rent_min", None)
+        rent_max = request.POST.get("rent_max", None)
+        rent_unspecified = request.POST.get("rent_unspecified", None) == "on"
+        short_rent = request.POST.get("short_rent", None) == "on"
+        electricity_include = request.POST.get("electricity_include", None) == "on"
+        rent_free_june_and_july = request.POST.get("rent_free_june_and_july", None) == "on"
+        max_4_years = request.POST.get("max_4_years", None) == "on"
+
+        floor = {
+                "unspecified": floor_unspecified,
+                "min": floor_min,
+                "max": floor_max
+                            }
+        space = {
+                "unspecified": space_unspecified,
+                "min": space_min,
+                "max": space_max
+                            }
+        rent = {
+                "unspecified": rent_unspecified,
+                "min": rent_min,
+                "max": rent_max
+                            }
+        personal_filter = PersonalFilter(
+                              email=email,
+                              regions=regions,
+                              types=types,
+                              floor=floor,
+                              space=space,
+                              rent=rent,
+                              short_rent=short_rent,
+                              electricity_include=electricity_include,
+                              rent_free_june_and_july=rent_free_june_and_july,
+                              max_4_years=max_4_years)
+
+        personal_filter.save()
+        personal_filter.send_initial_mail()
+
+
+    html_data = {
             "region_list": get_regions(),
             "type_list": get_types(),
             "space_boundaries": get_space_boundaries(),
             "rent_boundaries": get_rent_boundaries(),
             }
-    return render(request, "index.html", data)
+    return render(request, "index.html", html_data)
+
+
+def filter_info(request):
+    f_id = request.GET.get("id")
+    personal_filter = PersonalFilter.find_one({"_id": ObjectId(f_id)})
+    #personal_filter = dict2obj(personal_filter.get_info())
+
+    return HttpResponse(personal_filter)
+    return render(request, "filter.html", personal_filter)
 
 def available_apartments(request):
     #page = Page(layout=Page.SimplePageLayout)
