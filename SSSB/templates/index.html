@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+       <title>SSSB Reminder</title>
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <h2>SSSB Reminder</h2>
+        <div class="col-lg-12" style="padding: 10px;">
+            <a class="btn btn-default" href="available_apartments">
+                Available apartments
+            </a>
+        </div>
+        <div class="col-lg-12" style="padding: 10px;">
+            <a class="btn btn-default" href="apartment_status">
+                Apartment status
+            </a>
+        </div>
+        <div class="col-lg-6 col-sm-12" style="padding: 20px;">
+            <h3>Filter here</h3>
+            <form role="form">
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="text" class="form-control" name="email" placeholder="">
+                    <p class="help-block">Please fill your email here.</p>
+                </div>
+                <div class="form-group">
+                    <label>Region/Distance</label>
+                    <br>
+                    {% for region in region_list %}
+                        <input type="checkbox"> {{ region.name }}
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label>Floor</label>
+                    <br>
+                    <!--<input type="range" class="form-control"> -->
+                    <div class="col-lg-1">FROM</div>
+                    <div class="col-lg-2">
+                        <input type="number" class="form-control" value="0">
+                    </div>
+                    <div class="col-lg-1">TO</div>
+                    <div class="col-lg-2">
+                        <input type="number" class="form-control">
+                    </div>
+                    <input type="checkbox"> NOT SPECIFIED
+                    <br>
+                </div>
+                <div class="form-group">
+                    <label>Accommododation type</label>
+                    <br>
+                    {% for typ in type_list %}
+                        <input type="checkbox"> {{ typ.name }}
+                        <br>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label>Living space</label>
+                    <br>
+                    <div class="col-lg-1">FROM</div>
+                    <div class="col-lg-2">
+                        <input type="number" class="form-control" value="{{ space_boundaries.min}}">
+                    </div>
+                    <div class="col-lg-1">TO</div>
+                    <div class="col-lg-2">
+                        <input type="number" class="form-control" value="{{ space_boundaries.max}}">
+                    </div>
+                    <input type="checkbox"> NOT SPECIFIED
+                    <br>
+                </div>
+                <div class="form-group">
+                    <label>Rent</label>
+                    <br>
+                    <div class="col-lg-1">FROM</div>
+                    <div class="col-lg-2">
+                        <input type="number" class="form-control" value="{{ rent_boundaries.min}}">
+                    </div>
+                    <div class="col-lg-1">TO</div>
+                    <div class="col-lg-2">
+                        <input type="number" class="form-control" value="{{ rent_boundaries.max}}">
+                    </div>
+                    <input type="checkbox"> NOT SPECIFIED
+                    <br>
+                </div>
+                <div class="form-group">
+                    <label>Other options</label>
+                    <div class="checkbox">
+                        <label> <input type="checkbox"> Short rent </label>
+                    </div>
+                    <div class="checkbox">
+                        <label> <input type="checkbox"> Electricity free </label>
+                    </div>
+                    <div class="checkbox">
+                        <label> <input type="checkbox"> June & July free </label>
+                    </div>
+                    <div class="checkbox">
+                        <label> <input type="checkbox"> Max 4 years </label>
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="submit">Submit</button>
+            </form>
+        </div>
+    </body>
+</html>
+

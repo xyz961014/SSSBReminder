@@ -1,5 +1,6 @@
 # Create your views here.
 from django.http import HttpResponse
+from django.shortcuts import render
 from jinja2 import Environment, FileSystemLoader
 from pyecharts.globals import CurrentConfig
 from pyecharts import options as opts
@@ -38,64 +39,13 @@ CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
 #status_collection = db["apartment_status"]
 
 def index(request):
-    index_html = """
-   <head>
-      <title>SSSB统计</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-   </head>
-   <body>
-        <h2>SSSB Reminder</h2>
-        <div class="col-lg-12" style="padding: 20px;">
-            <a class="btn btn-default" href="available_apartments">Available apartments</a>
-            <a class="btn btn-default" href="apartment_status">Apartment status</a>
-        </div>
-<div class="col-lg-6" style="padding: 20px;">
-    <h3>Filter here</h3>
-    <form role="form">
-        <div class="form-group">
-           <label>E-mail</label>
-           <input type="text" class="form-control" name="email" placeholder="">
-        </div>
-        <div class="form-group">
-           <label >Region/Distance</label>
-           <input type="text" class="form-control"  placeholder="">
-        </div>
-        <div class="form-group">
-           <label for="inputfile">Floor</label>
-           <input type="text" class="form-control"  placeholder="">
-           <p class="help-block">这里是块级帮助文本</p>
-        </div>
-        <div class="form-group">
-           <label >Accommododation type</label>
-           <input type="text" class="form-control"  placeholder="">
-        </div>
-        <div class="form-group">
-           <label >Area</label>
-           <input type="text" class="form-control"  placeholder="">
-        </div>
-        <div class="form-group">
-           <label >Rent</label>
-           <input type="text" class="form-control"  placeholder="">
-        </div>
-        <div class="checkbox">
-           <label> <input type="checkbox"> Short rent </label>
-        </div>
-        <div class="checkbox">
-           <label> <input type="checkbox"> Electricity free </label>
-        </div>
-        <div class="checkbox">
-           <label> <input type="checkbox"> June & July free </label>
-        </div>
-        <div class="checkbox">
-           <label> <input type="checkbox"> Max 4 years </label>
-        </div>
-        <button class="btn btn-primary" type="submit">Submit</button>
-    </form>
-</div>
-   </body>
-                 """
-    return HttpResponse(index_html)
+    data = {
+            "region_list": get_regions(),
+            "type_list": get_types(),
+            "space_boundaries": get_space_boundaries(),
+            "rent_boundaries": get_rent_boundaries(),
+            }
+    return render(request, "index.html", data)
 
 def available_apartments(request):
     #page = Page(layout=Page.SimplePageLayout)
@@ -270,4 +220,44 @@ def get_apartment_line(object_number):
     )
     return c
 
+def get_regions():
+    region_list = sorted(ApartmentInfo._collection.distinct("housing_area"))
+    regions = [{"name": r} for r in region_list]
+    return dict2obj(regions)
 
+def get_types():
+    type_list = sorted(ApartmentInfo._collection.distinct("accommodation_type"))
+    types = [{"name": t} for t in type_list]
+    return dict2obj(types)
+
+def get_space_boundaries():
+    active_apartments = ApartmentInfo.find_active_ones()
+    space_list = sorted([a.living_space for a in active_apartments])
+    space_boundaries = {"min": space_list[0], "max": space_list[-1]}
+    return dict2obj(space_boundaries)
+
+
+def get_rent_boundaries():
+    active_apartments = ApartmentInfo.find_active_ones()
+    rent_list = sorted([a.monthly_rent for a in active_apartments])
+    rent_boundaries = {"min": rent_list[0], "max": rent_list[-1]}
+    return dict2obj(rent_boundaries)
+
+def dict2obj(args):
+    """
+    Convert dict to class object
+    """
+    class Obj(object):
+        def __init__(self, d):
+            for key, value in d.items():
+                if isinstance(value, (list, tuple)):
+                    setattr(self, key, 
+                            [Obj(x) if isinstance(x, dict) else x for x in value])
+                else:
+                    setattr(self, key, Obj(b) if isinstance(value, dict) else value)
+    if isinstance(args, (list, tuple)):
+        return [dict2obj(o) for o in args]
+    elif isinstance(args, dict):
+        return Obj(args)
+    else:
+        raise TypeError("Must convert list, tuple or dict.")

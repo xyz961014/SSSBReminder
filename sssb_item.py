@@ -139,6 +139,12 @@ class ApartmentInfo(SSSBItem):
                             tzinfo=sweden_timezone)
         return ddl_time > now_time
 
+    @classmethod
+    def find_active_ones(cls):
+        all_infos = cls.find_many()
+        active_ones = [a for a in all_infos if a.is_active()]
+        return active_ones
+
 
 class ApartmentStatus(SSSBItem):
     _collection = db["apartment_status"]
