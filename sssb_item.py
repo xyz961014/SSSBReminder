@@ -176,10 +176,10 @@ class PersonalFilter(SSSBItem):
                        electricity_include=False,
                        rent_free_june_and_july=False,
                        max_4_years=False,
+                       active=True,
                        **kwargs):
         super().__init__()
         self._collection = db["personal_filter"]
-        self.active = True
         self.email = email
         self.regions = regions
         self.types = types
@@ -191,12 +191,25 @@ class PersonalFilter(SSSBItem):
         self.electricity_include = electricity_include
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years
+        self.active = active
 
     def send_initial_mail(self):
         receivers = [self.email]
         link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
         msg = build_message(receivers, 
                             title="SSSB Filter built",
+                            content=json.dumps(self.get_info(), indent=4) + link)
+        send_mail(receivers, msg)
+
+    def unsubscribe(self):
+        self.active = False
+        self.save()
+
+    def send_revised_mail(self):
+        receivers = [self.email]
+        link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+        msg = build_message(receivers, 
+                            title="SSSB Filter revised",
                             content=json.dumps(self.get_info(), indent=4) + link)
         send_mail(receivers, msg)
 

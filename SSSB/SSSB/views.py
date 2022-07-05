@@ -12,6 +12,7 @@ from pprint import pprint
 
 from datetime import date, datetime
 import math
+import json
 import pymongo
 from bson import ObjectId
 
@@ -103,10 +104,63 @@ def index(request):
 def filter_info(request):
     f_id = request.GET.get("id")
     personal_filter = PersonalFilter.find_one({"_id": ObjectId(f_id)})
-    #personal_filter = dict2obj(personal_filter.get_info())
+    if not personal_filter.active:
+        return HttpResponse("Not an active subscription.")
+    filter_dict = {key: dict2obj(value) 
+                   for key, value in personal_filter.get_info().items()}
+    filter_dict["id"] = f_id
+    filter_dict["region_list"] = get_regions()
+    filter_dict["type_list"] = get_types()
 
-    return HttpResponse(personal_filter)
-    return render(request, "filter.html", personal_filter)
+    email = request.POST.get("email", None)
+    print(email)
+    if email is not None:
+        # edit subscription
+        personal_filter.regions = request.POST.getlist("region", [])
+        personal_filter.types = request.POST.getlist("type", [])
+        floor_min = request.POST.get("floor_min", None)
+        floor_max = request.POST.get("floor_max", None)
+        floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
+        space_min = request.POST.get("space_min", None)
+        space_max = request.POST.get("space_max", None)
+        space_unspecified = request.POST.get("space_unspecified", None) == "on"
+        rent_min = request.POST.get("rent_min", None)
+        rent_max = request.POST.get("rent_max", None)
+        rent_unspecified = request.POST.get("rent_unspecified", None) == "on"
+        personal_filter.short_rent = request.POST.get("short_rent", None) == "on"
+        personal_filter.electricity_include = request.POST.get("electricity_include", None) == "on"
+        personal_filter.rent_free_june_and_july = request.POST.get("rent_free_june_and_july", None) == "on"
+        floor = {
+                "unspecified": floor_unspecified,
+                "min": floor_min,
+                "max": floor_max
+                            }
+        space = {
+                "unspecified": space_unspecified,
+                "min": space_min,
+                "max": space_max
+                            }
+        rent = {
+                "unspecified": rent_unspecified,
+                "min": rent_min,
+                "max": rent_max
+                            }
+        personal_filter.floor = floor
+        personal_filter.space = space
+        personal_filter.rent = rent
+
+        personal_filter.save()
+        personal_filter.send_revised_mail()
+
+    return render(request, "filter.html", filter_dict)
+
+
+def unsubscribe_filter(request):
+    f_id = request.GET.get("id")
+    personal_filter = PersonalFilter.find_one({"_id": ObjectId(f_id)})
+    personal_filter.unsubscribe()
+    return HttpResponse("Unsubscribed!")
+
 
 def available_apartments(request):
     #page = Page(layout=Page.SimplePageLayout)
@@ -315,10 +369,10 @@ def dict2obj(args):
                     setattr(self, key, 
                             [Obj(x) if isinstance(x, dict) else x for x in value])
                 else:
-                    setattr(self, key, Obj(b) if isinstance(value, dict) else value)
+                    setattr(self, key, Obj(value) if isinstance(value, dict) else value)
     if isinstance(args, (list, tuple)):
         return [dict2obj(o) for o in args]
     elif isinstance(args, dict):
         return Obj(args)
     else:
-        raise TypeError("Must convert list, tuple or dict.")
+        return args
