@@ -60,8 +60,10 @@ class SSSBItem(object):
         return item
 
     @classmethod
-    def find_many(cls, json_object={}):
+    def find_many(cls, json_object={}, sort=None, sort_order=1):
         many = cls._collection.find(json_object)
+        if sort is not None:
+            many = many.sort(sort, sort_order)
         items = []
         for one in many:
             item = cls(**one)
@@ -134,6 +136,12 @@ class ApartmentInfo(SSSBItem):
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years
 
+    @classmethod
+    def find_active_ones(cls):
+        all_infos = cls.find_many()
+        active_ones = [a for a in all_infos if a.is_active()]
+        return active_ones
+
     def is_active(self):
         sweden_timezone = pytz.timezone('Europe/Stockholm')
         now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
@@ -143,11 +151,15 @@ class ApartmentInfo(SSSBItem):
                             tzinfo=sweden_timezone)
         return ddl_time > now_time
 
-    @classmethod
-    def find_active_ones(cls):
-        all_infos = cls.find_many()
-        active_ones = [a for a in all_infos if a.is_active()]
-        return active_ones
+    def get_current_bid(self):
+        statuses = ApartmentStatus.find_many({"object_number": self.object_number},
+                                             sort="update_time")
+        last_status = statuses[-1]
+        return {
+                "queue_len": last_status.queue_len,
+                "most_credit": last_status.most_credit
+               }
+
 
 
 class ApartmentStatus(SSSBItem):
@@ -170,35 +182,42 @@ class ApartmentAmount(SSSBItem):
 
 class PersonalFilter(SSSBItem):
     _collection = db["personal_filter"]
-    def __init__(self, email, current_credit, regions, types, floor, space, rent, 
+    def __init__(self, email, regions, types, floor, space, rent, 
                        distance=0,
                        short_rent=False,
                        electricity_include=False,
                        rent_free_june_and_july=False,
                        max_4_years=False,
                        active=True,
+                       current_credit=1e5,
+                       credit_start=None,
+                       recommendations=[],
                        **kwargs):
         super().__init__()
         self._collection = db["personal_filter"]
         self.email = email
-        self.credit_start = self.get_credit_start(current_credit)
+        if credit_start is not None:
+            self.credit_start = credit_start
+        else:
+            self.credit_start = self.get_credit_start(current_credit)
         self.regions = regions
         self.types = types
         self.floor = floor
         self.space = space
         self.rent = rent
-        self.distance = distance
+        self.distance = float(distance)
         self.short_rent = short_rent
         self.electricity_include = electricity_include
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years
         self.active = active
+        self.recommendations = recommendations
 
     def get_credit(self):
         sweden_timezone = pytz.timezone('Europe/Stockholm')
         now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
         start_date = datetime.strptime(self.credit_start, "%Y-%m-%d")
-        start_date = datetime(ddl.year, ddl.month, ddl.day, 
+        start_date = datetime(start_date.year, start_date.month, start_date.day, 
                               tzinfo=sweden_timezone)
         self.credit = (now_time - start_date).days
         return self.credit
@@ -222,6 +241,25 @@ class PersonalFilter(SSSBItem):
                             title="SSSB Filter revised",
                             content=json.dumps(self.get_info(), indent=4) + link)
         send_mail(receivers, msg)
+
+    def send_recommendations(self):
+        receivers = [self.email]
+        recommendations = ApartmentInfo.find_many(
+                {"object_number": {"$in": self.recommendations}}
+                )
+        rec_html = ""
+        for r in recommendations:
+            rec_html += """
+                        Name: {}
+                        URL: {}
+                        Credits: {} (Yours {})
+                        """.format(r.name, r.url, r.get_current_bid()["most_credit"],
+                                   self.get_credit())
+        msg = build_message(receivers, 
+                            title="SSSB RECOMMENDATIONS!",
+                            content=rec_html)
+        send_mail(receivers, msg)
+
 
     @classmethod
     def get_credit_start(cls, credit):

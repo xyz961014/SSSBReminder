@@ -108,6 +108,7 @@ def index(request):
 def filter_info(request):
     f_id = request.GET.get("id")
     personal_filter = PersonalFilter.find_one({"_id": ObjectId(f_id)})
+    personal_filter.get_credit()
     if not personal_filter.active:
         return HttpResponse("Not an active subscription.")
     filter_dict = {key: dict2obj(value) 
@@ -138,18 +139,18 @@ def filter_info(request):
         personal_filter.rent_free_june_and_july = request.POST.get("rent_free_june_and_july", None) == "on"
         floor = {
                 "unspecified": floor_unspecified,
-                "min": floor_min,
-                "max": floor_max
+                "min": int(floor_min) if floor_min is not None else None,
+                "max": int(floor_max) if floor_max is not None else None
                             }
         space = {
                 "unspecified": space_unspecified,
-                "min": space_min,
-                "max": space_max
+                "min": int(space_min) if space_min is not None else None,
+                "max": int(space_max) if space_max is not None else None
                             }
         rent = {
                 "unspecified": rent_unspecified,
-                "min": rent_min,
-                "max": rent_max
+                "min": int(rent_min) if rent_min is not None else None,
+                "max": int(rent_max) if rent_max is not None else None
                             }
         personal_filter.floor = floor
         personal_filter.space = space

@@ -85,7 +85,7 @@ class SSSBWebSpider(object):
             max_4_years_tag = len(apartment.find_elements(by="class name", value="Egenskap-1093")) > 0
             url_object = ApartmentURL(url=apartment_url, 
                                       crawled=False,
-                                      electricity_inlcude=electricity_tag,
+                                      electricity_include=electricity_tag,
                                       rent_free_june_and_july=free_june_july_tag,
                                       max_4_years=max_4_years_tag)
             url_object.save()
@@ -270,8 +270,51 @@ class SSSBWebSpider(object):
 def check_personal_filters():
     filters = PersonalFilter.find_many({"active": True})
     for f in tqdm(filters, desc="Checking filters"):
-        pass
-    pass
+        info_condition = {
+                "housing_area": {"$in": f.regions},
+                "accommodation_type": {"$in": f.types},
+                "electricity_include": f.electricity_include,
+                "rent_free_june_and_july": f.rent_free_june_and_july,
+                "max_4_years": f.max_4_years
+                         }
+        if not f.space["unspecified"]:
+            if f.space["min"]:
+                if not "living_space" in info_condition.keys():
+                    info_condition["living_space"] = {}
+                info_condition["living_space"]["$gte"] = int(f.space["min"])
+            if f.space["max"]:
+                if not "living_space" in info_condition.keys():
+                    info_condition["living_space"] = {}
+                info_condition["living_space"]["$lte"] = int(f.space["max"])
+        if not f.rent["unspecified"]:
+            if f.rent["min"]:
+                if not "monthly_rent" in info_condition.keys():
+                    info_condition["monthly_rent"] = {}
+                info_condition["monthly_rent"]["$gte"] = int(f.rent["min"])
+            if f.rent["max"]:
+                if not "monthly_rent" in info_condition.keys():
+                    info_condition["monthly_rent"] = {}
+                info_condition["monthly_rent"]["$lte"] = int(f.rent["max"])
+        if f.short_rent:
+            info_condition["end_date"] = {"$ne": None}
+        candidates = ApartmentInfo.find_many(info_condition)
+        candidates = [c for c in candidates if c.is_active()]
+        person_credit = f.get_credit()
+        possible_cands = [c for c in candidates 
+                          if person_credit >= c.get_current_bid()["most_credit"]]
+        if len(possible_cands) > 0:
+            # THERE ARE CHANCES!
+            possible_object_numbers = [c.object_number for c in possible_cands]
+            if not f.recommendations == possible_object_numbers:
+                # New recommendations!
+                # save recommendations
+                f.recommendations = possible_object_numbers
+                f.save()
+
+                # Send mail
+                f.send_recommendations()
+            else:
+                print("Duplicate recommendations. Skipped.")
 
 
 def main(args):
@@ -291,11 +334,12 @@ def main(args):
             for _ in range(args.max_retry):
                 try:
                     if not success:
-                        browser = webdriver.Chrome(options=options)
                         if args.get_url:
+                            browser = webdriver.Chrome(options=options)
                             spider = SSSBWebSpider(browser)
                             spider.get_urls()
                         if args.check_url:
+                            browser = webdriver.Chrome(options=options)
                             spider = SSSBWebSpider(browser)
                             spider.check_apartment_urls()
                         #if args.update_status:
@@ -308,7 +352,8 @@ def main(args):
                 except Exception as e:
                     print("Error occurs: ", e)
                 finally:
-                    spider.quit()
+                    if args.get_url or args.check_url:
+                        spider.quit()
             end_time = time.time()
             time_used = end_time - start_time
             if time_used < args.crawl_interval:
@@ -319,19 +364,21 @@ def main(args):
             else:
                 print("No sleep, Restart at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     else:
-        browser = webdriver.Chrome(options=options)
         if args.get_url:
+            browser = webdriver.Chrome(options=options)
             spider = SSSBWebSpider(browser)
             spider.get_urls()
+            spider.quit()
         if args.check_url:
+            browser = webdriver.Chrome(options=options)
             spider = SSSBWebSpider(browser)
             spider.check_apartment_urls()
+            spider.quit()
         #if args.update_status:
         #    spider = SSSBWebSpider(browser)
         #    spider.update_apartment_status()
         if args.check_filter:
             check_personal_filters()
-        spider.quit()
 
 
 
