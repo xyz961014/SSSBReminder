@@ -3,7 +3,7 @@ import re
 import pymongo
 import ipdb
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import pytz
 import json
 
@@ -170,7 +170,7 @@ class ApartmentAmount(SSSBItem):
 
 class PersonalFilter(SSSBItem):
     _collection = db["personal_filter"]
-    def __init__(self, email, regions, types, floor, space, rent, 
+    def __init__(self, email, current_credit, regions, types, floor, space, rent, 
                        distance=0,
                        short_rent=False,
                        electricity_include=False,
@@ -181,6 +181,7 @@ class PersonalFilter(SSSBItem):
         super().__init__()
         self._collection = db["personal_filter"]
         self.email = email
+        self.credit_start = self.get_credit_start(current_credit)
         self.regions = regions
         self.types = types
         self.floor = floor
@@ -192,6 +193,15 @@ class PersonalFilter(SSSBItem):
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years
         self.active = active
+
+    def get_credit(self):
+        sweden_timezone = pytz.timezone('Europe/Stockholm')
+        now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
+        start_date = datetime.strptime(self.credit_start, "%Y-%m-%d")
+        start_date = datetime(ddl.year, ddl.month, ddl.day, 
+                              tzinfo=sweden_timezone)
+        self.credit = (now_time - start_date).days
+        return self.credit
 
     def send_initial_mail(self):
         receivers = [self.email]
@@ -213,10 +223,17 @@ class PersonalFilter(SSSBItem):
                             content=json.dumps(self.get_info(), indent=4) + link)
         send_mail(receivers, msg)
 
+    @classmethod
+    def get_credit_start(cls, credit):
+        credit = int(credit)
+        sweden_timezone = pytz.timezone('Europe/Stockholm')
+        now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
+        start_time = now_time - timedelta(days=credit)
+        return start_time.strftime("%Y-%m-%d")
+
 
 def get_now_time():
     time_obj = time.localtime()
     time_str = time.strftime("%Y-%m-%d %H:%M:%S", time_obj)
     return time_str
-
 

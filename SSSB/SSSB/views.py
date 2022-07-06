@@ -45,8 +45,10 @@ CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
 def index(request):
     email = request.POST.get("email", None)
     if email is not None:
+        credit = request.POST.get("credit", 0)
         regions = request.POST.getlist("region", [])
         types = request.POST.getlist("type", [])
+        distance = request.POST.get("distance", None)
         floor_min = request.POST.get("floor_min", None)
         floor_max = request.POST.get("floor_max", None)
         floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
@@ -78,11 +80,13 @@ def index(request):
                             }
         personal_filter = PersonalFilter(
                               email=email,
+                              current_credit=credit,
                               regions=regions,
                               types=types,
                               floor=floor,
                               space=space,
                               rent=rent,
+                              distance=distance,
                               short_rent=short_rent,
                               electricity_include=electricity_include,
                               rent_free_june_and_july=rent_free_june_and_july,
@@ -113,9 +117,11 @@ def filter_info(request):
     filter_dict["type_list"] = get_types()
 
     email = request.POST.get("email", None)
-    print(email)
     if email is not None:
         # edit subscription
+        credit = request.POST.get("credit", 0)
+        personal_filter.distance = request.POST.get("distance", None)
+        personal_filter.credit_start = PersonalFilter.get_credit_start(credit)
         personal_filter.regions = request.POST.getlist("region", [])
         personal_filter.types = request.POST.getlist("type", [])
         floor_min = request.POST.get("floor_min", None)
@@ -168,7 +174,8 @@ def available_apartments(request):
     #page.add(
     #    amount_line,
     #        )
-    return HttpResponse(amount_line.render_embed())
+    turn_back = """<a href="/">Back</a>"""
+    return HttpResponse(turn_back + amount_line.render_embed())
 
 
 def apartment_status(request):
@@ -179,6 +186,7 @@ def apartment_status(request):
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
    </head>
+       <a href="/">Back</a>
        <div style="padding: 100px 100px 10px;">
            <form method="get">
                <div class="row">

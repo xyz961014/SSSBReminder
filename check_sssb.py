@@ -7,6 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from datetime import date, datetime, timedelta
 from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus, ApartmentAmount
+from sssb_item import PersonalFilter
 import requests 
 import time
 import random
@@ -30,8 +31,10 @@ def parse_args():
                         help="get SSSB apartment urls")
     parser.add_argument("--check_url", action="store_true",
                         help="get SSSB apartment info and status")
-    parser.add_argument("--update_status", action="store_true",
-                        help="update SSSB apartment status")
+    #parser.add_argument("--update_status", action="store_true",
+    #                    help="update SSSB apartment status")
+    parser.add_argument("--check_filter", action="store_true",
+                        help="Check SSSB filters and send emails")
     parser.add_argument("--endless", action="store_true",
                         help="endless crawling")
     parser.add_argument("--crawl_interval", type=int, default=1800,
@@ -143,27 +146,27 @@ class SSSBWebSpider(object):
         url_item.save()
 
 
-    def update_apartment_status(self):
-        apartments = ApartmentInfo.find_many({})
-        for apartment in tqdm(apartments, desc="Checking apartment status"):
-            url = apartment.url
-            (name, 
-             object_number, 
-             housing_area, 
-             address, 
-             accommodation_type, 
-             living_space, 
-             monthly_rent, 
-             valid_from, 
-             end_date, 
-             floor_drawing,
-             apartment_drawing,
-             ddl,
-             queue_len,
-             most_credit) = self.get_url_info(url)
+    #def update_apartment_status(self):
+    #    apartments = ApartmentInfo.find_many({})
+    #    for apartment in tqdm(apartments, desc="Checking apartment status"):
+    #        url = apartment.url
+    #        (name, 
+    #         object_number, 
+    #         housing_area, 
+    #         address, 
+    #         accommodation_type, 
+    #         living_space, 
+    #         monthly_rent, 
+    #         valid_from, 
+    #         end_date, 
+    #         floor_drawing,
+    #         apartment_drawing,
+    #         ddl,
+    #         queue_len,
+    #         most_credit) = self.get_url_info(url)
 
-            status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
-            status_item.save()
+    #        status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
+    #        status_item.save()
 
 
 
@@ -264,6 +267,12 @@ class SSSBWebSpider(object):
         self.browser.quit()
 
 
+def check_personal_filters():
+    filters = PersonalFilter.find_many({"active": True})
+    for f in tqdm(filters, desc="Checking filters"):
+        pass
+    pass
+
 
 def main(args):
     options = webdriver.ChromeOptions()
@@ -283,13 +292,18 @@ def main(args):
                 try:
                     if not success:
                         browser = webdriver.Chrome(options=options)
-                        spider = SSSBWebSpider(browser)
                         if args.get_url:
+                            spider = SSSBWebSpider(browser)
                             spider.get_urls()
                         if args.check_url:
+                            spider = SSSBWebSpider(browser)
                             spider.check_apartment_urls()
-                        if args.update_status:
-                            spider.update_apartment_status()
+                        #if args.update_status:
+                        #    spider = SSSBWebSpider(browser)
+                        #    spider.update_apartment_status()
+                        if args.check_filter:
+                            check_personal_filters()
+
                         success = True
                 except Exception as e:
                     print("Error occurs: ", e)
@@ -306,13 +320,17 @@ def main(args):
                 print("No sleep, Restart at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     else:
         browser = webdriver.Chrome(options=options)
-        spider = SSSBWebSpider(browser)
         if args.get_url:
+            spider = SSSBWebSpider(browser)
             spider.get_urls()
         if args.check_url:
+            spider = SSSBWebSpider(browser)
             spider.check_apartment_urls()
-        if args.update_status:
-            spider.update_apartment_status()
+        #if args.update_status:
+        #    spider = SSSBWebSpider(browser)
+        #    spider.update_apartment_status()
+        if args.check_filter:
+            check_personal_filters()
         spider.quit()
 
 

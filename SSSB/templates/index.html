@@ -26,7 +26,16 @@
                     <p class="help-block">Please fill your email here.</p>
                 </div>
                 <div class="form-group">
-                    <label>Region/Distance</label>
+                    <label>Credit days</label>
+                    <input type="number" class="form-control" name="credit">
+                </div>
+                <div class="form-group">
+                    <label>Distance</label>
+                    <input type="number" class="form-control" name="distance" value="{{ distance }}"> 
+                    <p class="help-block">km</p>
+                </div>
+                <div class="form-group">
+                    <label>Region</label>
                     <br>
                     {% for region in region_list %}
                         <input name="region" type="checkbox" value="{{ region.name }}"> 
