@@ -16,6 +16,7 @@ client = pymongo.MongoClient(mongo_path)
 db = client["SSSB"]
 
 from send_mail import send_mail, build_message
+from jinja2 import Environment, FileSystemLoader
 
 class SSSBItem(object):
     def __init__(self):
@@ -225,9 +226,12 @@ class PersonalFilter(SSSBItem):
     def send_initial_mail(self):
         receivers = [self.email]
         link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+
+        env = Environment(loader=FileSystemLoader('./SSSB/templates'))
+        template = env.get_template('initial_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB Filter built",
-                            content=json.dumps(self.get_info(), indent=4) + link)
+                            content=template.render(link=link))
         send_mail(receivers, msg)
 
     def unsubscribe(self):
@@ -237,9 +241,12 @@ class PersonalFilter(SSSBItem):
     def send_revised_mail(self):
         receivers = [self.email]
         link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+
+        env = Environment(loader=FileSystemLoader('./SSSB/templates'))
+        template = env.get_template('revising_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB Filter revised",
-                            content=json.dumps(self.get_info(), indent=4) + link)
+                            content=template.render(link=link))
         send_mail(receivers, msg)
 
     def send_recommendations(self):
@@ -247,17 +254,18 @@ class PersonalFilter(SSSBItem):
         recommendations = ApartmentInfo.find_many(
                 {"object_number": {"$in": self.recommendations}}
                 )
-        rec_html = ""
         for r in recommendations:
-            rec_html += """
-                        Name: {}
-                        URL: {}
-                        Credits: {} (Yours {})
-                        """.format(r.name, r.url, r.get_current_bid()["most_credit"],
-                                   self.get_credit())
+            bid = r.get_current_bid()
+            r.credit = bid["most_credit"]
+            r.queue_len = bid["queue_len"]
+            r.my_credit = self.get_credit()
+        recommendations = sorted(recommendations, key=lambda x: x.credit)
+
+        env = Environment(loader=FileSystemLoader('./SSSB/templates'))
+        template = env.get_template('recommendation_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB RECOMMENDATIONS!",
-                            content=rec_html)
+                            content=template.render(recommendations=recommendations))
         send_mail(receivers, msg)
 
 
