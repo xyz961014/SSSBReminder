@@ -17,6 +17,7 @@ db = client["SSSB"]
 
 from send_mail import send_mail, build_message
 from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
 
 class SSSBItem(object):
     def __init__(self):
@@ -206,7 +207,13 @@ class PersonalFilter(SSSBItem):
         self.floor = floor
         self.space = space
         self.rent = rent
-        self.distance = float(distance)
+        if type(distance) == str:
+            if not distance.strip() == "":
+                self.distance = float(distance)
+            else:
+                self.distance = 0
+        else:
+            self.distance = distance
         self.short_rent = short_rent
         self.electricity_include = electricity_include
         self.rent_free_june_and_july = rent_free_june_and_july
@@ -227,7 +234,9 @@ class PersonalFilter(SSSBItem):
         receivers = [self.email]
         link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
 
-        env = Environment(loader=FileSystemLoader('./SSSB/templates'))
+        curr_path = Path(__file__).resolve().parent
+        env = Environment(loader=FileSystemLoader(
+                    os.path.join(curr_path, 'SSSB/templates')))
         template = env.get_template('initial_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB Filter built",
@@ -242,7 +251,9 @@ class PersonalFilter(SSSBItem):
         receivers = [self.email]
         link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
 
-        env = Environment(loader=FileSystemLoader('./SSSB/templates'))
+        curr_path = Path(__file__).resolve().parent
+        env = Environment(loader=FileSystemLoader(
+                    os.path.join(curr_path, 'SSSB/templates')))
         template = env.get_template('revising_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB Filter revised",
@@ -261,7 +272,9 @@ class PersonalFilter(SSSBItem):
             r.my_credit = self.get_credit()
         recommendations = sorted(recommendations, key=lambda x: x.credit)
 
-        env = Environment(loader=FileSystemLoader('./SSSB/templates'))
+        curr_path = Path(__file__).resolve().parent
+        env = Environment(loader=FileSystemLoader(
+                    os.path.join(curr_path, 'SSSB/templates')))
         template = env.get_template('recommendation_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB RECOMMENDATIONS!",

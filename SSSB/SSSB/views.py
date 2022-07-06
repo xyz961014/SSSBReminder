@@ -48,7 +48,7 @@ def index(request):
         credit = request.POST.get("credit", 0)
         regions = request.POST.getlist("region", [])
         types = request.POST.getlist("type", [])
-        distance = request.POST.get("distance", None)
+        distance = request.POST.get("distance", 0)
         floor_min = request.POST.get("floor_min", None)
         floor_max = request.POST.get("floor_max", None)
         floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
@@ -121,7 +121,7 @@ def filter_info(request):
     if email is not None:
         # edit subscription
         credit = request.POST.get("credit", 0)
-        personal_filter.distance = request.POST.get("distance", None)
+        personal_filter.distance = request.POST.get("distance", 0)
         personal_filter.credit_start = PersonalFilter.get_credit_start(credit)
         personal_filter.regions = request.POST.getlist("region", [])
         personal_filter.types = request.POST.getlist("type", [])
