@@ -77,18 +77,21 @@ class SSSBWebSpider(object):
         available_apartments_area = self.browser.find_element(by="class name", value="Objektlistabilder")
         available_apartments = available_apartments_area.find_elements(by="class name", value="ObjektListItem")
         for apartment in tqdm(available_apartments, desc="Getting urls"):
-            name_area = apartment.find_element(by="class name", value="ObjektTyp")
-            link = name_area.find_element(by="tag name", value="a")
-            apartment_url = link.get_attribute("href")
-            electricity_tag = len(apartment.find_elements(by="class name", value="Egenskap-1036")) > 0
-            free_june_july_tag = len(apartment.find_elements(by="class name", value="Egenskap-3025")) > 0
-            max_4_years_tag = len(apartment.find_elements(by="class name", value="Egenskap-1093")) > 0
-            url_object = ApartmentURL(url=apartment_url, 
-                                      crawled=False,
-                                      electricity_include=electricity_tag,
-                                      rent_free_june_and_july=free_june_july_tag,
-                                      max_4_years=max_4_years_tag)
-            url_object.save()
+            try:
+                name_area = apartment.find_element(by="class name", value="ObjektTyp")
+                link = name_area.find_element(by="tag name", value="a")
+                apartment_url = link.get_attribute("href")
+                electricity_tag = len(apartment.find_elements(by="class name", value="Egenskap-1036")) > 0
+                free_june_july_tag = len(apartment.find_elements(by="class name", value="Egenskap-3025")) > 0
+                max_4_years_tag = len(apartment.find_elements(by="class name", value="Egenskap-1093")) > 0
+                url_object = ApartmentURL(url=apartment_url, 
+                                          crawled=False,
+                                          electricity_include=electricity_tag,
+                                          rent_free_june_and_july=free_june_july_tag,
+                                          max_4_years=max_4_years_tag)
+                url_object.save()
+            except Exception as e:
+                print("Getting URL with error: {}".format(e))
 
         return len(available_apartments)
 

@@ -357,14 +357,20 @@ def get_types():
 def get_space_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
     space_list = sorted([a.living_space for a in active_apartments])
-    space_boundaries = {"min": space_list[0], "max": space_list[-1]}
+    if len(space_list) > 0:
+        space_boundaries = {"min": space_list[0], "max": space_list[-1]}
+    else:
+        space_boundaries = {"min": 0, "max": 0}
     return dict2obj(space_boundaries)
 
 
 def get_rent_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
     rent_list = sorted([a.monthly_rent for a in active_apartments])
-    rent_boundaries = {"min": rent_list[0], "max": rent_list[-1]}
+    if len(rent_list) > 0:
+        rent_boundaries = {"min": rent_list[0], "max": rent_list[-1]}
+    else:
+        rent_boundaries = {"min": 0, "max": 0}
     return dict2obj(rent_boundaries)
 
 def dict2obj(args):
