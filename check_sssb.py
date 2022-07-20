@@ -345,9 +345,6 @@ def main(args):
                             browser = webdriver.Chrome(options=options)
                             spider = SSSBWebSpider(browser)
                             spider.check_apartment_urls()
-                        #if args.update_status:
-                        #    spider = SSSBWebSpider(browser)
-                        #    spider.update_apartment_status()
                         if args.check_filter:
                             check_personal_filters()
 
@@ -377,106 +374,8 @@ def main(args):
             spider = SSSBWebSpider(browser)
             spider.check_apartment_urls()
             spider.quit()
-        #if args.update_status:
-        #    spider = SSSBWebSpider(browser)
-        #    spider.update_apartment_status()
         if args.check_filter:
             check_personal_filters()
-
-
-
-    #if args.get_url:
-    #    if args.endless:
-    #        while True:
-    #            start_time = time.time()
-    #            success = False
-    #            for _ in range(args.max_retry):
-    #                try:
-    #                    if not success:
-    #                        browser = webdriver.Chrome(options=options)
-    #                        spider = SSSBWebSpider(browser)
-    #                        spider.get_urls()
-    #                        spider.quit()
-    #                        success = True
-    #                except Exception as e:
-    #                    print("Error occurs: ", e)
-    #            end_time = time.time()
-    #            time_used = end_time - start_time
-    #            if time_used < args.crawl_interval:
-    #                restart_time = (datetime.now() + \
-    #                                timedelta(seconds=args.crawl_interval - time_used)).strftime("%Y-%m-%d %H:%M:%S")
-    #                print("Sleep {:5.3f}s, Restart at {}".format(args.crawl_interval - time_used, restart_time))
-    #                time.sleep(args.crawl_interval - time_used)
-    #            else:
-    #                print("No sleep, Restart at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    #    else:
-    #        browser = webdriver.Chrome(options=options)
-    #        spider = SSSBWebSpider(browser)
-    #        spider.get_urls()
-    #        spider.quit()
-
-    #elif args.check_url:
-    #    if args.endless:
-    #        while True:
-    #            start_time = time.time()
-    #            success = False
-    #            for _ in range(args.max_retry):
-    #                try:
-    #                    if not success:
-    #                        browser = webdriver.Chrome(options=options)
-    #                        spider = SSSBWebSpider(browser)
-    #                        spider.check_apartment_urls()
-    #                        spider.quit()
-    #                        success = True
-    #                except Exception as e:
-    #                    print("Error occurs: ", e)
-    #            end_time = time.time()
-    #            time_used = end_time - start_time
-    #            if time_used < args.crawl_interval:
-    #                restart_time = (datetime.now() + \
-    #                                timedelta(seconds=args.crawl_interval - time_used)).strftime("%Y-%m-%d %H:%M:%S")
-    #                print("Sleep {:5.3f}s, Restart at {}".format(args.crawl_interval - time_used, restart_time))
-    #                time.sleep(args.crawl_interval - time_used)
-    #            else:
-    #                print("No sleep, Restart at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    #    else:
-    #        browser = webdriver.Chrome(options=options)
-    #        spider = SSSBWebSpider(browser)
-    #        spider.check_apartment_urls()
-    #        spider.quit()
-    #elif args.update_status:
-    #    if args.endless:
-    #        while True:
-    #            start_time = time.time()
-    #            success = False
-    #            for _ in range(args.max_retry):
-    #                try:
-    #                    if not success:
-    #                        browser = webdriver.Chrome(options=options)
-    #                        spider = SSSBWebSpider(browser)
-    #                        spider.update_apartment_status()
-    #                        spider.quit()
-    #                        success = True
-    #                except Exception as e:
-    #                    print("Error occurs: ", e)
-    #            end_time = time.time()
-    #            time_used = end_time - start_time
-    #            if time_used < args.crawl_interval:
-    #                restart_time = (datetime.now() + \
-    #                                timedelta(seconds=args.crawl_interval - time_used)).strftime("%Y-%m-%d %H:%M:%S")
-    #                print("Sleep {:5.3f}s, Restart at {}".format(args.crawl_interval - time_used, restart_time))
-    #                time.sleep(args.crawl_interval - time_used)
-    #            else:
-    #                print("No sleep, Restart at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    #    else:
-    #        browser = webdriver.Chrome(options=options)
-    #        spider = SSSBWebSpider(browser)
-    #        spider.update_apartment_status()
-    #        spider.quit()
-
-    #else:
-    #    print("Please select a function")
-
 
 if __name__ == "__main__":
     args = parse_args()
