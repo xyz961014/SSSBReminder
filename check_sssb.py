@@ -325,8 +325,8 @@ def main(args):
     options.headless = args.headless
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    options.add_argument("--remote-debugging-port=9515")
-    options.add_argument("--proxy-server=127.0.0.1:8118")
+    #options.add_argument("--remote-debugging-port=9515")
+    #options.add_argument("--proxy-server=127.0.0.1:8118")
 
     date_begin = datetime.strptime(args.credit_day_begin, "%Y-%m-%d")
 
