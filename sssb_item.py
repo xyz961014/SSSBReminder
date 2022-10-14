@@ -18,6 +18,7 @@ db = client["SSSB"]
 from send_mail import send_mail, build_message
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
+from check_map import get_distance
 
 class SSSBItem(object):
     def __init__(self):
@@ -46,7 +47,7 @@ class SSSBItem(object):
         update_time = datetime.strptime(self.update_time, "%Y-%m-%d %H:%M:%S")
         update_time = datetime(update_time.year, update_time.month, update_time.day, 
                                update_time.hour, update_time.minute, update_time.second,
-                               tzinfo=pytz.timezone("Asia/Shanghai"))
+                               tzinfo=pytz.timezone("UTC"))
         update_time = timezone.normalize(update_time.astimezone(tz=timezone))
         return update_time.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -118,6 +119,9 @@ class ApartmentInfo(SSSBItem):
                        electricity_include=False,
                        rent_free_june_and_july=False,
                        max_4_years=False,
+                       floor=None,
+                       distances=None,
+                       bid=None,
                        **kwarg):
         super().__init__()
         self._collection = db["apartment_info"]
@@ -137,6 +141,9 @@ class ApartmentInfo(SSSBItem):
         self.electricity_include = electricity_include
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years
+        self.floor = floor
+        self.distances = distances
+        self.bid = bid
 
     @classmethod
     def find_active_ones(cls):
@@ -154,13 +161,63 @@ class ApartmentInfo(SSSBItem):
         return ddl_time > now_time
 
     def get_current_bid(self):
-        statuses = ApartmentStatus.find_many({"object_number": self.object_number},
-                                             sort="update_time")
-        last_status = statuses[-1]
-        return {
-                "queue_len": last_status.queue_len,
-                "most_credit": last_status.most_credit
-               }
+        if self.bid is None:
+            statuses = ApartmentStatus.find_many({"object_number": self.object_number},
+                                                 sort="update_time")
+            last_status = statuses[-1]
+            bid = {
+                    "queue_len": last_status.queue_len,
+                    "most_credit": last_status.most_credit
+                   }
+            if not self.is_active():
+                self.bid = bid
+                self.save()
+        else:
+            bid = self.bid
+        return bid
+
+    def get_floor(self):
+        if not hasattr(self, "floor") or self.floor is None:
+            try:
+                parse_address = self.address.split("/")
+                apartment_num = parse_address[-1].strip()
+                floor = int(apartment_num[1])
+                self.floor = floor
+                self.save()
+            except:
+                self.floor = None
+        return self.floor
+
+    def get_distance(self, place_to):
+        if not hasattr(self, "distances") or self.distances is None:
+            self.distances = {}
+            try:
+                transit_distance = get_distance(self.address, place_to, "transit") 
+                cycling_distance = get_distance(self.address, place_to, "cycling") 
+                self.distances[place_to] = {
+                        "transit": transit_distance,
+                        "cycling": cycling_distance
+                                           }
+            except Exception as e:
+                print(e)
+        else:
+            if place_to not in self.distances.keys():
+                try:
+                    transit_distance = get_distance(self.address, place_to, "transit") 
+                    cycling_distance = get_distance(self.address, place_to, "cycling") 
+                    self.distances[place_to] = {
+                            "transit": transit_distance,
+                            "cycling": cycling_distance
+                                               }
+                except Exception as e:
+                    print(e)
+        self.save()
+
+        if place_to in self.distances.keys():
+            return self.distances[place_to]
+        else:
+            return None
+
 
 
 

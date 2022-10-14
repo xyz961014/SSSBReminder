@@ -22,6 +22,8 @@ urlpatterns = [
     path('', views.index),
     path('available_apartments', views.available_apartments),
     path('apartment_status', views.apartment_status),
+    path('search_apartments', views.search_apartments),
+    path('new_filter', views.new_filter),
     path('filter', views.filter_info),
     path('unsubscribe', views.unsubscribe_filter),
 ]

@@ -138,6 +138,7 @@ class SSSBWebSpider(object):
                                       max_4_years=url_item.max_4_years
                                       )
             info_item.save()
+            info_item.get_distance("KTH")
         #else:
         #    # update apartment info
         #    info_item = ApartmentInfo.find_one({"object_number": object_number})

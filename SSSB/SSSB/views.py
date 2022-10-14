@@ -15,6 +15,7 @@ import math
 import json
 import pymongo
 from bson import ObjectId
+from pprint import pprint
 
 import os
 import sys
@@ -42,7 +43,7 @@ CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
 #info_collection = db["apartment_info"]
 #status_collection = db["apartment_status"]
 
-def index(request):
+def new_filter(request):
     email = request.POST.get("email", None)
     if email is not None:
         credit = request.POST.get("credit", 0)
@@ -102,7 +103,129 @@ def index(request):
             "space_boundaries": get_space_boundaries(),
             "rent_boundaries": get_rent_boundaries(),
             }
+    return render(request, "new_filter.html", html_data)
+
+
+def index(request):
+    html_data = {}
     return render(request, "index.html", html_data)
+
+def search_apartments(request):
+
+    html_data = {
+            "region_list": get_regions(),
+            "type_list": get_types(),
+            "space_boundaries": get_space_boundaries(),
+            "rent_boundaries": get_rent_boundaries(),
+            }
+
+    MAX = 1e8
+
+    show_expired = request.POST.get("show_expired", "off") == "on"
+    credit = request.POST.get("credit", 0)
+    regions = request.POST.getlist("region", [r.name for r in html_data["region_list"]])
+    types = request.POST.getlist("type", [t.name for t in html_data["type_list"]])
+    distance_to = request.POST.get("distance_to", "KTH")
+    distance = request.POST.get("distance", 0)
+    bike_time = request.POST.get("bike_time", 0)
+    bus_time = request.POST.get("bus_time", 0)
+    floor_min = request.POST.get("floor_min", 0)
+    floor_max = request.POST.get("floor_max", MAX)
+    floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
+    space_min = request.POST.get("space_min", 0)
+    space_max = request.POST.get("space_max", MAX)
+    space_unspecified = request.POST.get("space_unspecified", None) == "on"
+    rent_min = request.POST.get("rent_min", 0)
+    rent_max = request.POST.get("rent_max", MAX)
+    rent_unspecified = request.POST.get("rent_unspecified", None) == "on"
+    short_rent = request.POST.get("short_rent", None) == "on"
+    electricity_include = request.POST.get("electricity_include", None) == "on"
+    rent_free_june_and_july = request.POST.get("rent_free_june_and_july", None) == "on"
+    max_4_years = request.POST.get("max_4_years", "off") == "on"
+
+    html_data.update({
+            "distance": distance,
+            "bike_time": bike_time,
+            "bus_time": bus_time
+        })
+
+    def get_apartments():
+        info_condition = {
+                "housing_area": {"$in": regions},
+                "accommodation_type": {"$in": types},
+                         }
+        if not space_unspecified:
+            if space_min:
+                if not "living_space" in info_condition.keys():
+                    info_condition["living_space"] = {}
+                info_condition["living_space"]["$gte"] = int(space_min)
+            if space_max:
+                if not "living_space" in info_condition.keys():
+                    info_condition["living_space"] = {}
+                info_condition["living_space"]["$lte"] = int(space_max)
+        if not rent_unspecified:
+            if rent_min:
+                if not "monthly_rent" in info_condition.keys():
+                    info_condition["monthly_rent"] = {}
+                info_condition["monthly_rent"]["$gte"] = int(rent_min)
+            if rent_max:
+                if not "monthly_rent" in info_condition.keys():
+                    info_condition["monthly_rent"] = {}
+                info_condition["monthly_rent"]["$lte"] = int(rent_max)
+        if short_rent:
+            info_condition["end_date"] = {"$ne": None}
+        if electricity_include:
+            info_condition["electricity_include"] = electricity_include
+        if rent_free_june_and_july:
+            info_condition["rent_free_june_and_july"] = rent_free_june_and_july
+        if max_4_years:
+            info_condition["max_4_years"] = max_4_years
+
+        candidates = ApartmentInfo.find_many(info_condition)
+
+        for i, c in enumerate(candidates):
+            candidates[i].credit = c.get_current_bid()["most_credit"]
+            candidates[i].floor = c.get_floor()
+
+        if not show_expired:
+            candidates = [c for c in candidates if c.is_active()]
+
+        if int(credit) > 0:
+            candidates = [c for c in candidates if int(credit) >= c.credit]
+
+        if not floor_unspecified:
+            if floor_min:
+                candidates = [c for c in candidates if c.floor is None or int(floor_min) <= c.floor]
+            if floor_max:
+                candidates = [c for c in candidates if c.floor is None or int(floor_max) >= c.floor]
+
+        if distance_to:
+            for i, c in enumerate(candidates):
+                candidates[i].get_distance(distance_to)
+                candidates[i].distance_to = distance_to
+                if distance_to in candidates[i].distances.keys():
+                    candidates[i].distance = c.distances[distance_to]["cycling"]["distance"]
+                    candidates[i].transit_time = c.distances[distance_to]["transit"]["time"]
+                    candidates[i].cycling_time = c.distances[distance_to]["cycling"]["time"]
+
+            if float(distance) > 0:
+                candidates = [c for c in candidates 
+                              if distance_to not in c.distances.keys() or 
+                                 c.distances[distance_to]["cycling"]["distance"] <= float(distance)]
+            if float(bus_time) > 0:
+                candidates = [c for c in candidates 
+                              if distance_to not in c.distances.keys() or 
+                                 c.distances[distance_to]["transit"]["time"] <= float(bus_time)]
+            if float(bike_time) > 0:
+                candidates = [c for c in candidates 
+                              if distance_to not in c.distances.keys() or 
+                                 c.distances[distance_to]["cycling"]["time"] <= float(bike_time)]
+
+        return candidates
+
+    html_data["apartments"] = get_apartments()
+
+    return render(request, "search_apartments.html", html_data)
 
 
 def filter_info(request):
@@ -187,7 +310,7 @@ def apartment_status(request):
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
    </head>
-       <a href="/">Back</a>
+       <a href="/search_apartments">Back</a>
        <div style="padding: 100px 100px 10px;">
            <form method="get">
                <div class="row">
