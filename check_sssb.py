@@ -99,7 +99,10 @@ class SSSBWebSpider(object):
     def check_apartment_urls(self):
         uncrawled_urls = ApartmentURL.find_many({"crawled": False})
         for url_item in tqdm(uncrawled_urls, desc="Checking apartments"):
-            self.check_apartment_url(url_item)
+            try:
+                self.check_apartment_url(url_item)
+            except Exception as e:
+                print("Skipped")
 
 
     def check_apartment_url(self, url_item):
