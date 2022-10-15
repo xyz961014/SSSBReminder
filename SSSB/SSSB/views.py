@@ -27,7 +27,7 @@ from sssb_item import PersonalFilter
 import socket
 hostname = socket.gethostname()
 
-template_path = "/home/projects/SSSBReminder/SSSB/SSSB/templates"
+template_path = "/root/projects/SSSBReminder/SSSB/SSSB/templates"
 if hostname == "xyz-ENVY-15":
     template_path = "/home/xyz/Documents/Projects/web_check/SSSBReminder/SSSB/SSSB/templates"
 
