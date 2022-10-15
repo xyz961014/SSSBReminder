@@ -113,7 +113,6 @@ def index(request):
 
 def search_apartments(request):
 
-    start_time = time.time()
     html_data = {
             "region_list": get_regions(),
             "type_list": get_types(),
@@ -125,7 +124,6 @@ def search_apartments(request):
     floor_boundaries = get_floor_boundaries()
     space_boundaries = get_space_boundaries()
     rent_boundaries = get_rent_boundaries()
-    print("Get boundaries: {} s".format(time.time() - start_time))
 
     show_expired = request.POST.get("show_expired", "off") == "on"
     credit = request.POST.get("credit", 0)
@@ -152,7 +150,6 @@ def search_apartments(request):
     sort_key = request.GET.get("sort_key", None)
     sort_order = request.GET.get("sort_order", "asc")
 
-    print("Get data: {} s".format(time.time() - start_time))
 
     for i, region in enumerate(html_data["region_list"]):
         if region.name in regions:
@@ -189,7 +186,6 @@ def search_apartments(request):
             "sort_key": sort_key,
             "sort_order": sort_order
         })
-    print("update data: {} s".format(time.time() - start_time))
 
     def get_apartments():
         info_condition = {
@@ -224,12 +220,10 @@ def search_apartments(request):
             info_condition["max_4_years"] = max_4_years
 
         candidates = ApartmentInfo.find_many(info_condition)
-        print("find candidates: {} s".format(time.time() - start_time))
 
         for i, c in enumerate(candidates):
             candidates[i].credit = c.get_current_bid()["most_credit"]
-            #candidates[i].floor = c.get_floor()
-        print("floor and credits: {} s".format(time.time() - start_time))
+            candidates[i].floor = c.get_floor()
 
         if not show_expired:
             candidates = [c for c in candidates if c.is_active()]
@@ -268,7 +262,6 @@ def search_apartments(request):
         return candidates
 
     apartments = get_apartments()
-    print("get apartments: {} s".format(time.time() - start_time))
     if sort_key is not None:
         if sort_key == "region":
             apartments = sorted(apartments, key=lambda x: x.distances[x.distance_to]["cycling"]["distance"], 
@@ -276,7 +269,6 @@ def search_apartments(request):
         else:
             apartments = sorted(apartments, key=lambda x: getattr(x, sort_key), reverse=sort_order=="desc")
     html_data["apartments"] = apartments
-    print("sort: {} s".format(time.time() - start_time))
 
     return render(request, "search_apartments.html", html_data)
 
@@ -531,9 +523,9 @@ def get_types():
 
 def get_space_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
-    space_list = sorted([a.living_space for a in active_apartments])
+    space_list = [a.living_space for a in active_apartments]
     if len(space_list) > 0:
-        space_boundaries = {"min": space_list[0], "max": space_list[-1]}
+        space_boundaries = {"min": min(space_list), "max": max(space_list)}
     else:
         space_boundaries = {"min": 0, "max": 0}
     return dict2obj(space_boundaries)
@@ -541,18 +533,18 @@ def get_space_boundaries():
 
 def get_rent_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
-    rent_list = sorted([a.monthly_rent for a in active_apartments])
+    rent_list = [a.monthly_rent for a in active_apartments]
     if len(rent_list) > 0:
-        rent_boundaries = {"min": rent_list[0], "max": rent_list[-1]}
+        rent_boundaries = {"min": min(rent_list), "max": max(rent_list)}
     else:
         rent_boundaries = {"min": 0, "max": 0}
     return dict2obj(rent_boundaries)
 
 def get_floor_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
-    floor_list = sorted([a.floor for a in active_apartments])
+    floor_list = [a.floor for a in active_apartments]
     if len(floor_list) > 0:
-        floor_boundaries = {"min": floor_list[0], "max": floor_list[-1]}
+        floor_boundaries = {"min": min(floor_list), "max": max(floor_list)}
     else:
         floor_boundaries = {"min": 0, "max": 0}
     return dict2obj(floor_boundaries)
