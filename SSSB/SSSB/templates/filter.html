@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+       <title>SSSB Reminder</title>
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <h2>Your personal filter</h2>
+        <div class="col-lg-6 col-sm-12" style="padding: 20px;">
+            <form role="form" method="post">
+                <input type="hidden" name="email" value="{{ email }}">
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="text" class="form-control" value="{{ email }}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Credit days</label>
+                    <input type="number" class="form-control" name="credit" value="{{ credit }}">
+                </div>
+                <div class="form-group">
+                    <label>Distance (not supported for now)</label>
+                    <input type="number" class="form-control" name="distance" value="{{ distance }}"> 
+                    <p class="help-block">km</p>
+                </div>
+                <div class="form-group">
+                    <label>Region</label>
+                    <br>
+                    {% for region in region_list %}
+                    <input name="region" type="checkbox" value="{{ region.name }}" {% if region.name in regions %} checked {% endif %}> 
+                        {{ region.name }}
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label>Floor (not supported for now)</label>
+                    <br>
+                    <!--<input type="range" class="form-control"> -->
+                    <div class="col-lg-1">FROM</div>
+                    <div class="col-lg-2">
+                        <input name="floor_min" type="number" class="form-control" value="{{ floor.min}}">
+                    </div>
+                    <div class="col-lg-1">TO</div>
+                    <div class="col-lg-2">
+                        <input name="floor_max" type="number" class="form-control" value="{{ floor.max}}">
+                    </div>
+                    <input name="floor_unspecified" type="checkbox" {% if floor.unspecified %} checked {% endif %}> NOT SPECIFIED
+                    <br>
+                </div>
+                <div class="form-group">
+                    <label>Accommododation type</label>
+                    <br>
+                    {% for typ in type_list %}
+                        <input name="type" type="checkbox" value="{{ typ.name }}" {% if typ.name in types %} checked {% endif %}> 
+                        {{ typ.name }}
+                        <br>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label>Living space</label>
+                    <br>
+                    <div class="col-lg-1">FROM</div>
+                    <div class="col-lg-2">
+                        <input name="space_min" type="number" class="form-control" value="{{ space.min}}">
+                    </div>
+                    <div class="col-lg-1">TO</div>
+                    <div class="col-lg-2">
+                        <input name="space_max" type="number" class="form-control" value="{{ space.max}}">
+                    </div>
+                    <input name="space_unspecified" type="checkbox" {% if space.unspecified %} checked {% endif %}> NOT SPECIFIED
+                    <br>
+                </div>
+                <div class="form-group">
+                    <label>Rent</label>
+                    <br>
+                    <div class="col-lg-1">FROM</div>
+                    <div class="col-lg-2">
+                        <input name="rent_min" type="number" class="form-control" value="{{ rent.min}}">
+                    </div>
+                    <div class="col-lg-1">TO</div>
+                    <div class="col-lg-2">
+                        <input name="rent_max" type="number" class="form-control" value="{{ rent.max}}">
+                    </div>
+                    <input name="rent_unspecified" type="checkbox" {% if rent.unspecified %} checked {% endif %}> NOT SPECIFIED
+                    <br>
+                </div>
+                <div class="form-group">
+                    <label>Other options</label>
+                    <div class="checkbox">
+                        <label> <input name="short_rent" type="checkbox" {% if short_rent %} checked {% endif %}> 
+                            Short rent 
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label> <input name="electricity_include" type="checkbox" {% if electricity_include %} checked {% endif %}> 
+                            Electricity include 
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label> <input name="rent_free_june_and_july" type="checkbox" {% if rent_free_june_and_july %} checked {% endif %}> 
+                            June & July free 
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label> <input name="max_4_years" type="checkbox" {% if max_4_years %} checked {% endif %}> 
+                            Max 4 years 
+                        </label>
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="submit">
+                    Edit
+                </button>
+                <a class="btn btn-danger" href="unsubscribe?id={{ id }}">
+                    Unsubcribe
+                </a>
+            </form>
+        </div>
+    </body>
+</html>
+
