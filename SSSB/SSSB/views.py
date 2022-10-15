@@ -13,6 +13,7 @@ from pprint import pprint
 from datetime import date, datetime
 import math
 import json
+import time
 import pymongo
 from bson import ObjectId
 from pprint import pprint
@@ -112,6 +113,7 @@ def index(request):
 
 def search_apartments(request):
 
+    start_time = time.time()
     html_data = {
             "region_list": get_regions(),
             "type_list": get_types(),
@@ -120,6 +122,10 @@ def search_apartments(request):
             }
 
     MAX = 1e8
+    floor_boundaries = get_floor_boundaries()
+    space_boundaries = get_space_boundaries()
+    rent_boundaries = get_rent_boundaries()
+    print("Get boundaries: {} s".format(time.time() - start_time))
 
     show_expired = request.POST.get("show_expired", "off") == "on"
     credit = request.POST.get("credit", 0)
@@ -129,25 +135,61 @@ def search_apartments(request):
     distance = request.POST.get("distance", 0)
     bike_time = request.POST.get("bike_time", 0)
     bus_time = request.POST.get("bus_time", 0)
-    floor_min = request.POST.get("floor_min", 0)
-    floor_max = request.POST.get("floor_max", MAX)
+    floor_min = request.POST.get("floor_min", floor_boundaries.min)
+    floor_max = request.POST.get("floor_max", floor_boundaries.max)
     floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
-    space_min = request.POST.get("space_min", 0)
-    space_max = request.POST.get("space_max", MAX)
+    space_min = request.POST.get("space_min", space_boundaries.min)
+    space_max = request.POST.get("space_max", space_boundaries.max)
     space_unspecified = request.POST.get("space_unspecified", None) == "on"
-    rent_min = request.POST.get("rent_min", 0)
-    rent_max = request.POST.get("rent_max", MAX)
+    rent_min = request.POST.get("rent_min", rent_boundaries.min)
+    rent_max = request.POST.get("rent_max", rent_boundaries.max)
     rent_unspecified = request.POST.get("rent_unspecified", None) == "on"
     short_rent = request.POST.get("short_rent", None) == "on"
     electricity_include = request.POST.get("electricity_include", None) == "on"
     rent_free_june_and_july = request.POST.get("rent_free_june_and_july", None) == "on"
     max_4_years = request.POST.get("max_4_years", "off") == "on"
 
+    sort_key = request.GET.get("sort_key", None)
+    sort_order = request.GET.get("sort_order", "asc")
+
+    print("Get data: {} s".format(time.time() - start_time))
+
+    for i, region in enumerate(html_data["region_list"]):
+        if region.name in regions:
+            html_data["region_list"][i].selected = True
+        else:
+            html_data["region_list"][i].selected = False
+
+    for i, typ in enumerate(html_data["type_list"]):
+        if typ.name in types:
+            html_data["type_list"][i].selected = True
+        else:
+            html_data["type_list"][i].selected = False
+
+
     html_data.update({
+            "show_expired": show_expired,
+            "credit": credit,
             "distance": distance,
             "bike_time": bike_time,
-            "bus_time": bus_time
+            "bus_time": bus_time,
+            "floor_min": floor_min,
+            "floor_max": floor_max,
+            "space_min": space_min,
+            "space_max": space_max,
+            "rent_min": rent_min,
+            "rent_max": rent_max,
+            "floor_unspecified": floor_unspecified,
+            "space_unspecified": space_unspecified,
+            "rent_unspecified": rent_unspecified,
+            "short_rent": short_rent,
+            "electricity_include": electricity_include,
+            "rent_free_june_and_july": rent_free_june_and_july,
+            "max_4_years": max_4_years,
+            "sort_key": sort_key,
+            "sort_order": sort_order
         })
+    print("update data: {} s".format(time.time() - start_time))
 
     def get_apartments():
         info_condition = {
@@ -182,10 +224,12 @@ def search_apartments(request):
             info_condition["max_4_years"] = max_4_years
 
         candidates = ApartmentInfo.find_many(info_condition)
+        print("find candidates: {} s".format(time.time() - start_time))
 
         for i, c in enumerate(candidates):
             candidates[i].credit = c.get_current_bid()["most_credit"]
-            candidates[i].floor = c.get_floor()
+            #candidates[i].floor = c.get_floor()
+        print("floor and credits: {} s".format(time.time() - start_time))
 
         if not show_expired:
             candidates = [c for c in candidates if c.is_active()]
@@ -223,7 +267,16 @@ def search_apartments(request):
 
         return candidates
 
-    html_data["apartments"] = get_apartments()
+    apartments = get_apartments()
+    print("get apartments: {} s".format(time.time() - start_time))
+    if sort_key is not None:
+        if sort_key == "region":
+            apartments = sorted(apartments, key=lambda x: x.distances[x.distance_to]["cycling"]["distance"], 
+                                            reverse=sort_order=="desc")
+        else:
+            apartments = sorted(apartments, key=lambda x: getattr(x, sort_key), reverse=sort_order=="desc")
+    html_data["apartments"] = apartments
+    print("sort: {} s".format(time.time() - start_time))
 
     return render(request, "search_apartments.html", html_data)
 
@@ -306,11 +359,10 @@ def apartment_status(request):
 
     input_area = """
    <head>
-      <title>SSSB统计</title>
+      <title>Apartment Info</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
    </head>
-       <a href="/search_apartments">Back</a>
        <div style="padding: 100px 100px 10px;">
            <form method="get">
                <div class="row">
@@ -495,6 +547,15 @@ def get_rent_boundaries():
     else:
         rent_boundaries = {"min": 0, "max": 0}
     return dict2obj(rent_boundaries)
+
+def get_floor_boundaries():
+    active_apartments = ApartmentInfo.find_active_ones()
+    floor_list = sorted([a.floor for a in active_apartments])
+    if len(floor_list) > 0:
+        floor_boundaries = {"min": floor_list[0], "max": floor_list[-1]}
+    else:
+        floor_boundaries = {"min": 0, "max": 0}
+    return dict2obj(floor_boundaries)
 
 def dict2obj(args):
     """

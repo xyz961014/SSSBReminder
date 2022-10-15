@@ -182,6 +182,8 @@ class ApartmentInfo(SSSBItem):
                 parse_address = self.address.split("/")
                 apartment_num = parse_address[-1].strip()
                 floor = int(apartment_num[1])
+                if int(apartment_num[0]) > 1:
+                    floor += 10 * (int(apartment_num[0]) - 1)
                 self.floor = floor
                 self.save()
             except:

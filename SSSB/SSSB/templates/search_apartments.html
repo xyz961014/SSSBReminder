@@ -30,11 +30,13 @@
                             <div class="modal-body">
                                 <input type="hidden" name="filter_submit" value=1> 
                                 <div class="form-group">
-                                    <input name="show_expired" type="checkbox"> Show expired housing
+                                    <input name="show_expired" type="checkbox" 
+                                        {% if show_expired %} checked {% endif %}> 
+                                        Show expired housing
                                 </div>
                                 <div class="form-group">
                                     <label> Max credit days</label>
-                                    <input type="number" class="form-control" name="credit" value=0>
+                                    <input type="number" class="form-control" name="credit" value="{{ credit }}">
                                 </div>
                                 <div class="form-group">
                                     <label> Distance </label>
@@ -58,7 +60,8 @@
                                     <label>Region</label>
                                     <br>
                                     {% for region in region_list %}
-                                        <input name="region" type="checkbox" value="{{ region.name }}" checked> 
+                                    <input name="region" type="checkbox" value="{{ region.name }}" 
+                                        {% if region.selected %} checked {% endif %}> 
                                         {{ region.name }}
                                     {% endfor %}
                                 </div>
@@ -68,20 +71,25 @@
                                     <!--<input type="range" class="form-control"> -->
                                     <div class="col-lg-1">FROM</div>
                                     <div class="col-lg-2">
-                                        <input name="floor_min" type="number" class="form-control" value="0">
+                                        <input name="floor_min" type="number" class="form-control" 
+                                            value="{{ floor_min }}">
                                     </div>
                                     <div class="col-lg-1">TO</div>
                                     <div class="col-lg-2">
-                                        <input name="floor_max" type="number" class="form-control">
+                                        <input name="floor_max" type="number" class="form-control"
+                                            value="{{ floor_max }}">
                                     </div>
-                                    <input name="floor_unspecified" type="checkbox" checked> Not specified
+                                    <input name="floor_unspecified" type="checkbox" 
+                                        {% if floor_unspecified %} checked {% endif %}> 
+                                        Not specified
                                     <br>
                                 </div>
                                 <div class="form-group">
                                     <label>Accommododation type</label>
                                     <br>
                                     {% for typ in type_list %}
-                                        <input name="type" type="checkbox" value="{{ typ.name }}" checked> 
+                                        <input name="type" type="checkbox" value="{{ typ.name }}"
+                                        {% if typ.selected %} checked {% endif %}> 
                                         {{ typ.name }}
                                         <br>
                                     {% endfor %}
@@ -91,48 +99,60 @@
                                     <br>
                                     <div class="col-lg-1">FROM</div>
                                     <div class="col-lg-2">
-                                        <input name="space_min" type="number" class="form-control" value="{{ space_boundaries.min}}">
+                                        <input name="space_min" type="number" class="form-control" 
+                                            value="{{ space_min }}">
                                     </div>
                                     <div class="col-lg-1">TO</div>
                                     <div class="col-lg-2">
-                                        <input name="space_max" type="number" class="form-control" value="{{ space_boundaries.max}}">
+                                        <input name="space_max" type="number" class="form-control" 
+                                            value="{{ space_max }}">
                                     </div>
-                                    <input name="space_unspecified" type="checkbox" checked> Not specified
+                                    <input name="space_unspecified" type="checkbox"
+                                        {% if space_unspecified %} checked {% endif %}> 
+                                        Not specified
                                     <br>
                                 </div>
                                 <div class="form-group">
                                     <label>Rent</label>
                                     <br>
                                     <div class="col-lg-1">FROM</div>
-                                    <div class="col-lg-2">
-                                        <input name="rent_min" type="number" class="form-control" value="{{ rent_boundaries.min}}">
+                                    <div class="col-lg-3">
+                                        <input name="rent_min" type="number" class="form-control" 
+                                            value="{{ rent_min }}">
                                     </div>
                                     <div class="col-lg-1">TO</div>
-                                    <div class="col-lg-2">
-                                        <input name="rent_max" type="number" class="form-control" value="{{ rent_boundaries.max}}">
+                                    <div class="col-lg-3">
+                                        <input name="rent_max" type="number" class="form-control" 
+                                            value="{{ rent_max }}">
                                     </div>
-                                    <input name="rent_unspecified" type="checkbox" checked> Not specified
+                                    <input name="rent_unspecified" type="checkbox"
+                                        {% if rent_unspecified %} checked {% endif %}> 
+                                        Not specified
                                     <br>
                                 </div>
                                 <div class="form-group">
                                     <label>Other options</label>
                                     <div class="checkbox">
-                                        <label> <input name="short_rent" type="checkbox"> 
+                                        <label> <input name="short_rent" type="checkbox" 
+                                                    {% if short_rent %} checked {% endif %}> 
                                             Short rent 
                                         </label>
                                     </div>
                                     <div class="checkbox">
-                                        <label> <input name="electricity_include" type="checkbox"> 
+                                        <label> <input name="electricity_include" type="checkbox" 
+                                                    {% if electricity_include %} checked {% endif %}> 
                                             Electricity include 
                                         </label>
                                     </div>
                                     <div class="checkbox">
-                                        <label> <input name="rent_free_june_and_july" type="checkbox"> 
+                                        <label> <input name="rent_free_june_and_july" type="checkbox" 
+                                                    {% if rent_free_june_and_july %} checked {% endif %}> 
                                             June & July free 
                                         </label>
                                     </div>
                                     <div class="checkbox">
-                                        <label> <input name="max_4_years" type="checkbox"> 
+                                        <label> <input name="max_4_years" type="checkbox" 
+                                                    {% if max_4_years %} checked {% endif %}> 
                                             Max 4 years 
                                         </label>
                                     </div>
@@ -151,25 +171,59 @@
             <table class="table table-bordered table-hover">
                 <caption></caption>
                 <thead>
-                   <tr>
-                      <th>Name</th>
-                      <th>Region</th>
-                      <th>Space</th>
-                      <th>Rent</th>
-                      <th>Credits</th>
-                      <th>DDL</th>
-                   </tr>
+                    <tr>
+                        <th> Name 
+                            <a class="btn btn-link btn-xs" href="search_apartments?sort_key=name&sort_order=asc" >↑</a>
+                            <a class="btn btn-link btn-xs" href="search_apartments?sort_key=name&sort_order=desc">↓</a>
+                        </th>
+                        <th> Region
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=region&sort_order=asc" >↑</a>
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=region&sort_order=desc">↓</a>
+                        </th>
+                        <th> Space
+                            <a class="btn btn-link btn-xs" 
+                               href="search_apartments?sort_key=living_space&sort_order=asc" >↑</a>
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=living_space&sort_order=desc">↓</a>
+                        </th>
+                        <th> Rent
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=monthly_rent&sort_order=asc">↑</a>
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=monthly_rent&sort_order=desc">↓</a>
+                        </th>
+                        <th> Credits
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=credit&sort_order=asc" >↑</a>
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=credit&sort_order=desc">↓</a>
+                        </th>
+                        <th> DDL
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=application_ddl&sort_order=asc">↑</a>
+                            <a class="btn btn-link btn-xs" 
+                                href="search_apartments?sort_key=application_ddl&sort_order=desc">↓</a>
+                        </th>
+                    </tr>
                 </thead>
                 <tbody>
 
                 {% for item in apartments %}
                     <tr>
                         <td>
-                            <a href="apartment_status?object_number={{ item.object_number }}">{{ item.name }}</a>
+                            <a href="apartment_status?object_number={{ item.object_number }}" 
+                                target="_blank" rel="noopener noreferrer">
+                                {{ item.name }}
+                            </a>
                             <br>
                             <i>Type</i>: {{ item.accommodation_type }}
                             <br>
-                            <a href="{{ item.url }}">Link to SSSB Page</a>
+                            <a href="{{ item.url }}"
+                                target="_blank" rel="noopener noreferrer">
+                                Link to SSSB Page
+                            </a>
                         </td>
                         <td>
                             <b>{{ item.housing_area }}</b> 
