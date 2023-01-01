@@ -91,10 +91,10 @@ class GoogleMapWebSpider(object):
             path_block = distance_blocks[1]
             path_str = re.sub("\s", "", path_block.text)
             if "km" in path_str:
-                parse_path = re.split("km", re.sub(",", ".", path_str))
+                parse_path = re.split("km", re.sub(",", "", path_str))
                 km = eval(parse_path[0])
             elif "m" in path_str:
-                parse_path = re.split("m", re.sub(",", ".", path_str))
+                parse_path = re.split("m", re.sub(",", "", path_str))
                 km = eval(parse_path[0]) / 1000
         else:
             km = None
