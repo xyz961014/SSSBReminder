@@ -25,7 +25,8 @@ def parse_args():
                         help="headless run browser")
     parser.add_argument("--distance", type=str, nargs="+",
                         help="get driving distance of two locations")
-    parser.add_argument("--distance_mode", type=str, choices=["driving", "cycling", "transit"],
+    parser.add_argument("--distance_mode", type=str, choices=["driving", "cycling", "transit", "recommended"],
+                        default="recommended",
                         help="get driving distance of two locations")
     parser.add_argument("--max_retry", type=int, default=5,
                         help="retry when not crawled")
@@ -68,12 +69,23 @@ class GoogleMapWebSpider(object):
             mode_button = self.browser.find_element(by="xpath", value='//*[@id="omnibox-directions"]/div/div[2]/div/div/div/div[5]/button')
         elif mode == "transit":
             mode_button = self.browser.find_element(by="xpath", value='//*[@id="omnibox-directions"]/div/div[2]/div/div/div/div[3]/button')
+        elif mode == "recommended":
+            mode_button = self.browser.find_element(by="xpath", value='//*[@id="omnibox-directions"]/div/div[2]/div/div/div/div[1]/button')
         mode_button.click()
 
         self.wait.until(EC.visibility_of_all_elements_located((By.XPATH, '//*[@id="section-directions-trip-0"]/div[1]')))
-        distance_blocks = self.browser.find_element(by="class name", value="XdKEzd").find_elements(by="tag name", value='div')
-        time_block= distance_blocks[0]
-        time_str = re.sub("\s", "", time_block.text)
+        try:
+            distance_blocks = self.browser.find_element(by="class name", value="XdKEzd").find_elements(by="tag name", value='div')
+            time_block= distance_blocks[0]
+            time_str = re.sub("\s", "", time_block.text)
+        except:
+            distance_blocks = None
+            if mode == "recommended":
+                time_block = self.browser.find_element(by="class name", value="uchGue")
+                time_str = re.sub("\s", "", time_block.text)
+            else:
+                raise KeyError("Can not find exact path.")
+
         if "hr" in time_str and not "min" in time_str:
             parse_time = re.split("hr", time_str)
             hour = eval(parse_time[0])
@@ -87,7 +99,7 @@ class GoogleMapWebSpider(object):
             hour = eval(parse_time[0])
             minute = eval(parse_time[1])
 
-        if not mode == "transit":
+        if not mode in ["transit"] and distance_blocks is not None and len(distance_blocks) > 1:
             path_block = distance_blocks[1]
             path_str = re.sub("\s", "", path_block.text)
             if "km" in path_str:
