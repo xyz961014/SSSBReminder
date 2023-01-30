@@ -102,7 +102,7 @@ class SSSBWebSpider(object):
             try:
                 self.check_apartment_url(url_item)
             except Exception as e:
-                print("Skipped")
+                print("Error: {}, Skipped".format(e))
 
 
     def check_apartment_url(self, url_item):

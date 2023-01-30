@@ -39,7 +39,7 @@ def parse_args():
 
 class GoogleMapWebSpider(object):
     def __init__(self, browser):
-        self.url = "https://www.google.com/maps/dir/?hl=en"
+        self.url = "https://www.google.com/maps/dir///?hl=en"
         self.browser = browser
         self.wait = WebDriverWait(self.browser, 20)
         self.apartment_urls = []
