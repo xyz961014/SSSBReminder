@@ -123,6 +123,7 @@ def search_apartments(request):
     MAX = 1e8
     floor_boundaries = get_floor_boundaries()
     space_boundaries = get_space_boundaries()
+    space_boundaries = get_space_boundaries()
     rent_boundaries = get_rent_boundaries()
 
     show_expired = request.POST.get("show_expired", "off") == "on"
@@ -239,7 +240,10 @@ def search_apartments(request):
 
         if distance_to:
             for i, c in enumerate(candidates):
-                candidates[i].get_distance(distance_to)
+                print("HAHAHA", i)
+                #candidates[i].get_distance(distance_to)
+                if not hasattr(c, "distances") or c.distances is None:
+                    continue
                 candidates[i].distance_to = distance_to
                 if distance_to in candidates[i].distances.keys():
                     candidates[i].distance = c.distances[distance_to]["cycling"]["distance"]
@@ -523,7 +527,7 @@ def get_types():
 
 def get_space_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
-    space_list = [a.living_space for a in active_apartments]
+    space_list = [a.living_space for a in active_apartments if a.living_space is not None]
     if len(space_list) > 0:
         space_boundaries = {"min": min(space_list), "max": max(space_list)}
     else:
@@ -533,7 +537,7 @@ def get_space_boundaries():
 
 def get_rent_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
-    rent_list = [a.monthly_rent for a in active_apartments]
+    rent_list = [a.monthly_rent for a in active_apartments if a.monthly_rent is not None]
     if len(rent_list) > 0:
         rent_boundaries = {"min": min(rent_list), "max": max(rent_list)}
     else:
@@ -542,7 +546,7 @@ def get_rent_boundaries():
 
 def get_floor_boundaries():
     active_apartments = ApartmentInfo.find_active_ones()
-    floor_list = [a.floor for a in active_apartments]
+    floor_list = [a.floor for a in active_apartments if a.floor is not None]
     if len(floor_list) > 0:
         floor_boundaries = {"min": min(floor_list), "max": max(floor_list)}
     else:

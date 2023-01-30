@@ -295,7 +295,7 @@ class PersonalFilter(SSSBItem):
 
         curr_path = Path(__file__).resolve().parent
         env = Environment(loader=FileSystemLoader(
-                    os.path.join(curr_path, 'SSSB/templates')))
+                    os.path.join(curr_path, 'SSSB/SSSB/templates')))
         template = env.get_template('initial_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB Filter built",
@@ -312,7 +312,7 @@ class PersonalFilter(SSSBItem):
 
         curr_path = Path(__file__).resolve().parent
         env = Environment(loader=FileSystemLoader(
-                    os.path.join(curr_path, 'SSSB/templates')))
+                    os.path.join(curr_path, 'SSSB/SSSB/templates')))
         template = env.get_template('revising_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB Filter revised",
@@ -333,7 +333,7 @@ class PersonalFilter(SSSBItem):
 
         curr_path = Path(__file__).resolve().parent
         env = Environment(loader=FileSystemLoader(
-                    os.path.join(curr_path, 'SSSB/templates')))
+                    os.path.join(curr_path, 'SSSB/SSSB/templates')))
         template = env.get_template('recommendation_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB RECOMMENDATIONS!",

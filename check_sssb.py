@@ -140,8 +140,8 @@ class SSSBWebSpider(object):
                                       rent_free_june_and_july=url_item.rent_free_june_and_july,
                                       max_4_years=url_item.max_4_years
                                       )
-            info_item.save()
             info_item.get_distance("KTH")
+            info_item.save()
         #else:
         #    # update apartment info
         #    info_item = ApartmentInfo.find_one({"object_number": object_number})
