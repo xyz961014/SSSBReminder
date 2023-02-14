@@ -142,9 +142,12 @@ class SSSBWebSpider(object):
                                       )
             info_item.get_distance("KTH")
             info_item.save()
-        #else:
-        #    # update apartment info
-        #    info_item = ApartmentInfo.find_one({"object_number": object_number})
+        else:
+            # update apartment info
+            info_item = ApartmentInfo.find_one({"object_number": object_number})
+            if not hasattr(info_item, "distances") or info_item.distances is None:
+                info_item.get_distance("KTH")
+            info_item.save()
 
         status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
         status_item.save()
