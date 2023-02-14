@@ -52,7 +52,7 @@
                     <label>Accommododation type</label>
                     <br>
                     {% for typ in type_list %}
-                        <input name="type" type="checkbox" value="{{ typ.name }}"> 
+                        <input name="type" type="checkbox" value="{{ typ.name }}" checked> 
                         {{ typ.name }}
                         <br>
                     {% endfor %}
@@ -68,7 +68,7 @@
                     <div class="col-lg-2">
                         <input name="space_max" type="number" class="form-control" value="{{ space_boundaries.max}}">
                     </div>
-                    <input name="space_unspecified" type="checkbox"> NOT SPECIFIED
+                    <input name="space_unspecified" type="checkbox" checked> NOT SPECIFIED
                     <br>
                 </div>
                 <div class="form-group">
@@ -82,7 +82,7 @@
                     <div class="col-lg-2">
                         <input name="rent_max" type="number" class="form-control" value="{{ rent_boundaries.max}}">
                     </div>
-                    <input name="rent_unspecified" type="checkbox"> NOT SPECIFIED
+                    <input name="rent_unspecified" type="checkbox" checked> NOT SPECIFIED
                     <br>
                 </div>
                 <!--
