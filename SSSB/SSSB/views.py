@@ -14,6 +14,7 @@ from datetime import date, datetime
 import math
 import json
 import time
+import re
 import pymongo
 from bson import ObjectId
 from pprint import pprint
@@ -51,25 +52,31 @@ def new_filter(request):
         regions = request.POST.getlist("region", [])
         types = request.POST.getlist("type", [])
         distance = request.POST.get("distance", 0)
-        floor_min = request.POST.get("floor_min", None)
-        floor_max = request.POST.get("floor_max", None)
-        floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
+        #floor_min = request.POST.get("floor_min", None)
+        #floor_max = request.POST.get("floor_max", None)
+        #floor_unspecified = request.POST.get("floor_unspecified", None) == "on"
         space_min = request.POST.get("space_min", None)
         space_max = request.POST.get("space_max", None)
         space_unspecified = request.POST.get("space_unspecified", None) == "on"
         rent_min = request.POST.get("rent_min", None)
         rent_max = request.POST.get("rent_max", None)
         rent_unspecified = request.POST.get("rent_unspecified", None) == "on"
-        short_rent = request.POST.get("short_rent", None) == "on"
-        electricity_include = request.POST.get("electricity_include", None) == "on"
-        rent_free_june_and_july = request.POST.get("rent_free_june_and_july", None) == "on"
-        max_4_years = request.POST.get("max_4_years", None) == "on"
+        #short_rent = request.POST.get("short_rent", None) == "on"
+        #electricity_include = request.POST.get("electricity_include", None) == "on"
+        #rent_free_june_and_july = request.POST.get("rent_free_june_and_july", None) == "on"
+        #max_4_years = request.POST.get("max_4_years", None) == "on"
 
-        floor = {
-                "unspecified": floor_unspecified,
-                "min": floor_min,
-                "max": floor_max
-                            }
+        #floor = {
+        #        "unspecified": floor_unspecified,
+        #        "min": floor_min,
+        #        "max": floor_max
+        #                    }
+        kitchenette_types = []
+        for t in types:
+            if "kitchen" in t:
+                kitchenette_types.append(re.sub("kitchen", "kitchenette", t))
+        types.extend(kitchenette_types)
+
         space = {
                 "unspecified": space_unspecified,
                 "min": space_min,
@@ -85,14 +92,10 @@ def new_filter(request):
                               current_credit=credit,
                               regions=regions,
                               types=types,
-                              floor=floor,
                               space=space,
                               rent=rent,
                               distance=distance,
-                              short_rent=short_rent,
-                              electricity_include=electricity_include,
-                              rent_free_june_and_july=rent_free_june_and_july,
-                              max_4_years=max_4_years)
+                              )
 
         personal_filter.save()
         personal_filter.send_initial_mail()
@@ -113,6 +116,7 @@ def index(request):
 
 def search_apartments(request):
 
+    start_time = time.time()
     html_data = {
             "region_list": get_regions(),
             "type_list": get_types(),
@@ -120,11 +124,12 @@ def search_apartments(request):
             "rent_boundaries": get_rent_boundaries(),
             }
 
+    #print("TIME 1: {}s".format(time.time() - start_time))
     MAX = 1e8
     floor_boundaries = get_floor_boundaries()
-    space_boundaries = get_space_boundaries()
-    space_boundaries = get_space_boundaries()
-    rent_boundaries = get_rent_boundaries()
+    space_boundaries = html_data["space_boundaries"]
+    rent_boundaries = html_data["rent_boundaries"]
+    #print("TIME 2: {}s".format(time.time() - start_time))
 
     show_expired = request.POST.get("show_expired", "off") == "on"
     credit = request.POST.get("credit", 0)
@@ -151,6 +156,7 @@ def search_apartments(request):
     sort_key = request.GET.get("sort_key", None)
     sort_order = request.GET.get("sort_order", "asc")
 
+    #print("TIME 3: {}s".format(time.time() - start_time))
 
     for i, region in enumerate(html_data["region_list"]):
         if region.name in regions:
@@ -164,6 +170,7 @@ def search_apartments(request):
         else:
             html_data["type_list"][i].selected = False
 
+    #print("TIME 4: {}s".format(time.time() - start_time))
 
     html_data.update({
             "show_expired": show_expired,
@@ -240,7 +247,6 @@ def search_apartments(request):
 
         if distance_to:
             for i, c in enumerate(candidates):
-                print("HAHAHA", i)
                 #candidates[i].get_distance(distance_to)
                 if not hasattr(c, "distances") or c.distances is None:
                     continue
@@ -266,6 +272,7 @@ def search_apartments(request):
         return candidates
 
     apartments = get_apartments()
+    #print("TIME 5: {}s".format(time.time() - start_time))
     if sort_key is not None:
         if sort_key == "region":
             apartments = sorted(apartments, key=lambda x: x.distances[x.distance_to]["cycling"]["distance"], 
@@ -273,6 +280,7 @@ def search_apartments(request):
         else:
             apartments = sorted(apartments, key=lambda x: getattr(x, sort_key), reverse=sort_order=="desc")
     html_data["apartments"] = apartments
+    #print("TIME 6: {}s".format(time.time() - start_time))
 
     return render(request, "search_apartments.html", html_data)
 
@@ -522,6 +530,7 @@ def get_regions():
 
 def get_types():
     type_list = sorted(ApartmentInfo._collection.distinct("accommodation_type"))
+    type_list = sorted(list(set([re.sub("kitchenette", "kitchen", t) for t in type_list])))
     types = [{"name": t} for t in type_list]
     return dict2obj(types)
 

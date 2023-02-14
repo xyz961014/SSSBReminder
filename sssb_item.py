@@ -243,7 +243,8 @@ class ApartmentAmount(SSSBItem):
 
 class PersonalFilter(SSSBItem):
     _collection = db["personal_filter"]
-    def __init__(self, email, regions, types, floor, space, rent, 
+    def __init__(self, email, regions, types, space, rent,
+                       floor=None,
                        distance=0,
                        short_rent=False,
                        electricity_include=False,
@@ -278,6 +279,7 @@ class PersonalFilter(SSSBItem):
         self.rent_free_june_and_july = rent_free_june_and_july
         self.max_4_years = max_4_years
         self.active = active
+        self.old_recommendations = recommendations
         self.recommendations = recommendations
 
     def get_credit(self):
@@ -321,23 +323,68 @@ class PersonalFilter(SSSBItem):
 
     def send_recommendations(self):
         receivers = [self.email]
-        recommendations = ApartmentInfo.find_many(
-                {"object_number": {"$in": self.recommendations}}
+        curr_recommendation_ids = self.recommendations
+        last_recommendation_ids = self.old_recommendations
+        new_ids = []
+        unchange_ids = []
+        for r_id in curr_recommendation_ids:
+            if r_id in last_recommendation_ids:
+                unchange_ids.append(r_id)
+            else:
+                new_ids.append(r_id)
+        old_ids = []
+        for r_id in last_recommendation_ids:
+            if not r_id in curr_recommendation_ids:
+                old_ids.append(r_id)
+        new_recommendations = ApartmentInfo.find_many(
+                {"object_number": {"$in": new_ids}}
                 )
-        for r in recommendations:
-            bid = r.get_current_bid()
-            r.credit = bid["most_credit"]
-            r.queue_len = bid["queue_len"]
-            r.my_credit = self.get_credit()
-        recommendations = sorted(recommendations, key=lambda x: x.credit)
+        unchange_recommendations = ApartmentInfo.find_many(
+                {"object_number": {"$in": unchange_ids}}
+                )
+        old_recommendations = ApartmentInfo.find_many(
+                {"object_number": {"$in": old_ids}}
+                )
+
+        def get_bid(recommendations):
+            for r in recommendations:
+                bid = r.get_current_bid()
+                r.credit = bid["most_credit"]
+                r.queue_len = bid["queue_len"]
+                r.my_credit = self.get_credit()
+            recommendations = sorted(recommendations, key=lambda x: x.credit)
+            return recommendations
+
+        def add_distance(candidates, distance_to):
+            for i, c in enumerate(candidates):
+                #candidates[i].get_distance(distance_to)
+                if not hasattr(c, "distances") or c.distances is None:
+                    continue
+                candidates[i].distance_to = distance_to
+                if distance_to in candidates[i].distances.keys():
+                    candidates[i].distance = c.distances[distance_to]["cycling"]["distance"]
+                    candidates[i].transit_time = c.distances[distance_to]["transit"]["time"]
+                    candidates[i].cycling_time = c.distances[distance_to]["cycling"]["time"]
+            return candidates
+
+        new_recommendations = add_distance(new_recommendations, "KTH")
+        unchange_recommendations = add_distance(unchange_recommendations, "KTH")
+        old_recommendations = add_distance(old_recommendations, "KTH")
+        new_recommendations = get_bid(new_recommendations)
+        unchange_recommendations = get_bid(unchange_recommendations)
+        old_recommendations = get_bid(old_recommendations)
 
         curr_path = Path(__file__).resolve().parent
-        env = Environment(loader=FileSystemLoader(
-                    os.path.join(curr_path, 'SSSB/SSSB/templates')))
+        env = Environment(loader=FileSystemLoader(os.path.join(curr_path, 'SSSB/SSSB/templates')))
         template = env.get_template('recommendation_mail.html')  
         msg = build_message(receivers, 
                             title="SSSB RECOMMENDATIONS!",
-                            content=template.render(recommendations=recommendations))
+                            content=template.render(new_recommendations=new_recommendations,
+                                                    unchange_recommendations=unchange_recommendations,
+                                                    old_recommendations=old_recommendations))
+                                #"New Recommendations": new_recommendations,
+                                #"Unchange Recommendations": unchange_recommendations,
+                                #"Recommendations No Longer Applicable": old_recommendations}))
         send_mail(receivers, msg)
 
 

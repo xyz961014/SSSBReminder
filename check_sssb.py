@@ -312,9 +312,11 @@ def check_personal_filters():
         if len(possible_cands) > 0:
             # THERE ARE CHANCES!
             possible_object_numbers = [c.object_number for c in possible_cands]
+            #if True:
             if not f.recommendations == possible_object_numbers:
                 # New recommendations!
                 # save recommendations
+                f.old_recommendations = f.recommendations
                 f.recommendations = possible_object_numbers
                 f.save()
 

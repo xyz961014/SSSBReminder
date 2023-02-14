@@ -28,14 +28,14 @@
                     <label>Region</label>
                     <br>
                     {% for region in region_list %}
-                        <input name="region" type="checkbox" value="{{ region.name }}"> 
+                        <input name="region" type="checkbox" value="{{ region.name }}" checked> 
                         {{ region.name }}
                     {% endfor %}
                 </div>
+                <!--
                 <div class="form-group">
                     <label>Floor (not supported for now)</label>
                     <br>
-                    <!--<input type="range" class="form-control"> -->
                     <div class="col-lg-1">FROM</div>
                     <div class="col-lg-2">
                         <input name="floor_min" type="number" class="form-control" value="0">
@@ -47,6 +47,7 @@
                     <input name="floor_unspecified" type="checkbox"> NOT SPECIFIED
                     <br>
                 </div>
+                -->
                 <div class="form-group">
                     <label>Accommododation type</label>
                     <br>
@@ -84,6 +85,7 @@
                     <input name="rent_unspecified" type="checkbox"> NOT SPECIFIED
                     <br>
                 </div>
+                <!--
                 <div class="form-group">
                     <label>Other options</label>
                     <div class="checkbox">
@@ -107,6 +109,7 @@
                         </label>
                     </div>
                 </div>
+                -->
                 <button class="btn btn-primary" type="submit">
                     Submit
                 </button>

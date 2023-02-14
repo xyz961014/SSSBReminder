@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-       <title>SSSB Reminder</title>
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <title>SSSB Reminder</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <script src="//cdn.bootcss.com/jquery/2.1.1/jquery.min.js" rel="external nofollow"  rel="external nofollow"  rel="external nofollow" ></script>
+        <script src="//cdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.min.js" rel="external nofollow"  rel="external nofollow"  rel="external nofollow"></script>
     </head>
     <body>
-        <h2>Congrats! There are available apartments for you!</h2>
+        <h2>Your available apartments have changed!</h2>
+
+        {% if new_recommendations|length > 0 %} 
+        <h3>New Recommendations:</h3>
 
         <div class="col-lg-12">
             <table class="table table-bordered table-hover">
@@ -14,21 +19,170 @@
                 <thead>
                    <tr>
                       <th>Name</th>
+                      <th>Region</th>
                       <th>Credits</th>
+                      <th>DDL</th>
                    </tr>
                 </thead>
                 <tbody>
 
-                {% for item in recommendations %}
+                {% for item in new_recommendations %}
                     <tr>
-                        <td><a href="{{ item.url }}">{{ item.name }}</a></td>
-                        <td>{{ item.credit }}</td>
+                        <td>
+                            <a href="https://sssb.thufootball.tech/apartment_status?object_number={{ item.object_number }}" 
+                                target="_blank" rel="noopener noreferrer">
+                                {{ item.name }}
+                            </a>
+                            <br>
+                            <a href="{{ item.url }}"
+                                target="_blank" rel="noopener noreferrer">
+                                Link to SSSB Page
+                            </a>
+                            <br>
+                            <i>Type</i>: {{ item.accommodation_type }}
+                            <br>
+                            <i>Space</i>: {{ item.living_space }} m<sup>2</sup>
+                            <br>
+                            <i>Rent</i>: {{ item.monthly_rent }} SEK
+                        </td>
+                        <td>
+                            <b>{{ item.housing_area }}</b> 
+                            <br> 
+                            <i> Distance to {{ item.distance_to }}</i>
+                            {{ item.distance }} km
+                            <br> 
+                            <i> Transit to {{ item.distance_to }}</i>
+                            {{ item.transit_time }} min
+                            <br> 
+                            <i> Cycling to {{ item.distance_to }}</i>
+                            {{ item.cycling_time }} min
+                        </td>
+                        <td>{{ item.credit }} days</td>
+                        <td>{{ item.application_ddl }}</td>
                     </tr>
                 {% endfor %}
 
                 </tbody>
             </table>
         </div>
+        {% endif %}
+
+        {% if unchange_recommendations|length > 0 %} 
+        <h3>Still recommended:</h3>
+
+        <div class="col-lg-12">
+            <table class="table table-bordered table-hover">
+                <caption></caption>
+                <thead>
+                   <tr>
+                      <th>Name</th>
+                      <th>Region</th>
+                      <th>Credits</th>
+                      <th>DDL</th>
+                   </tr>
+                </thead>
+                <tbody>
+
+                {% for item in unchange_recommendations %}
+                    <tr>
+                        <td>
+                            <a href="https://sssb.thufootball.tech/apartment_status?object_number={{ item.object_number }}" 
+                                target="_blank" rel="noopener noreferrer">
+                                {{ item.name }}
+                            </a>
+                            <br>
+                            <a href="{{ item.url }}"
+                                target="_blank" rel="noopener noreferrer">
+                                Link to SSSB Page
+                            </a>
+                            <br>
+                            <i>Type</i>: {{ item.accommodation_type }}
+                            <br>
+                            <i>Space</i>: {{ item.living_space }} m<sup>2</sup>
+                            <br>
+                            <i>Rent</i>: {{ item.monthly_rent }} SEK
+                        </td>
+                        <td>
+                            <b>{{ item.housing_area }}</b> 
+                            <br> 
+                            <i> Distance to {{ item.distance_to }}</i>
+                            {{ item.distance }} km
+                            <br> 
+                            <i> Transit to {{ item.distance_to }}</i>
+                            {{ item.transit_time }} min
+                            <br> 
+                            <i> Cycling to {{ item.distance_to }}</i>
+                            {{ item.cycling_time }} min
+                        </td>
+                        <td>{{ item.credit }} days</td>
+                        <td>{{ item.application_ddl }}</td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if old_recommendations|length > 0 %} 
+
+        <h3>No longer applicable:</h3>
+
+        <div class="col-lg-12">
+            <table class="table table-bordered table-hover">
+                <caption></caption>
+                <thead>
+                   <tr>
+                      <th>Name</th>
+                      <th>Region</th>
+                      <th>Credits</th>
+                      <th>DDL</th>
+                   </tr>
+                </thead>
+                <tbody>
+
+                {% for item in old_recommendations %}
+                    <tr>
+                        <td>
+                            <a href="https://sssb.thufootball.tech/apartment_status?object_number={{ item.object_number }}" 
+                                target="_blank" rel="noopener noreferrer">
+                                {{ item.name }}
+                            </a>
+                            <br>
+                            <a href="{{ item.url }}"
+                                target="_blank" rel="noopener noreferrer">
+                                Link to SSSB Page
+                            </a>
+                            <br>
+                            <i>Type</i>: {{ item.accommodation_type }}
+                            <br>
+                            <i>Space</i>: {{ item.living_space }} m<sup>2</sup>
+                            <br>
+                            <i>Rent</i>: {{ item.monthly_rent }} SEK
+                        </td>
+                        <td>
+                            <b>{{ item.housing_area }}</b> 
+                            <br> 
+                            <i> Distance to {{ item.distance_to }}</i>
+                            {{ item.distance }} km
+                            <br> 
+                            <i> Transit to {{ item.distance_to }}</i>
+                            {{ item.transit_time }} min
+                            <br> 
+                            <i> Cycling to {{ item.distance_to }}</i>
+                            {{ item.cycling_time }} min
+                        </td>
+                        <td>{{ item.credit }} days</td>
+                        <td>{{ item.application_ddl }}</td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+
     </body>
 </html>
 
