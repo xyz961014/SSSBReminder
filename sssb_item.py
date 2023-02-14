@@ -377,11 +377,14 @@ class PersonalFilter(SSSBItem):
         curr_path = Path(__file__).resolve().parent
         env = Environment(loader=FileSystemLoader(os.path.join(curr_path, 'SSSB/SSSB/templates')))
         template = env.get_template('recommendation_mail.html')  
+
+        link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
         msg = build_message(receivers, 
                             title="SSSB RECOMMENDATIONS!",
                             content=template.render(new_recommendations=new_recommendations,
                                                     unchange_recommendations=unchange_recommendations,
-                                                    old_recommendations=old_recommendations))
+                                                    old_recommendations=old_recommendations,
+                                                    link=link))
                                 #"New Recommendations": new_recommendations,
                                 #"Unchange Recommendations": unchange_recommendations,
                                 #"Recommendations No Longer Applicable": old_recommendations}))

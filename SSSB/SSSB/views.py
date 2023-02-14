@@ -99,6 +99,7 @@ def new_filter(request):
 
         personal_filter.save()
         personal_filter.send_initial_mail()
+        return HttpResponse("Filter created! Please check your mailbox.")
 
 
     html_data = {
