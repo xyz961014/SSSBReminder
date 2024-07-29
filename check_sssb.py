@@ -1,10 +1,12 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.proxy import Proxy, ProxyType
+from selenium.webdriver.chrome.options import Options
 from datetime import date, datetime, timedelta
 from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus, ApartmentAmount
 from sssb_item import PersonalFilter
@@ -14,6 +16,7 @@ import random
 import argparse
 import re
 import os
+import sys
 import pymongo
 from time import sleep
 from pprint import pprint
@@ -98,9 +101,10 @@ class SSSBWebSpider(object):
 
     def check_apartment_urls(self):
         uncrawled_urls = ApartmentURL.find_many({"crawled": False})
-        for url_item in tqdm(uncrawled_urls, desc="Checking apartments"):
+        for url_item in tqdm(uncrawled_urls, file=sys.stdout, desc="Checking apartments"):
             try:
                 self.check_apartment_url(url_item)
+                #tqdm.write("complete")
             except Exception as e:
                 print("Error: {}, Skipped".format(e))
 
@@ -330,15 +334,32 @@ def check_personal_filters():
 
 
 def main(args):
-    options = webdriver.ChromeOptions()
-    options.headless = args.headless
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    #options.add_argument("--remote-debugging-port=9515")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    chrome_path = '/chrome-headless-shell-linux64/chrome-headless-shell'
+    chromedriver_path = '/chromedriver-linux64/chromedriver'
+    service = ChromeService(executable_path=chromedriver_path)
+
+    #chrome_options = webdriver.ChromeOptions()
+    chrome_options = Options()
+    chrome_options.binary_location = chrome_path
+    chrome_options.headless = args.headless
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--remote-debugging-port=9222")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--disable-setuid-sandbox")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-application-cache")
+    chrome_options.add_argument("--disable-infobars")
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--single-process")
     #options.add_argument("--proxy-server=127.0.0.1:8118")
 
     date_begin = datetime.strptime(args.credit_day_begin, "%Y-%m-%d")
 
+    func = ""
     if args.endless:
         while True:
             start_time = time.time()
@@ -347,19 +368,25 @@ def main(args):
                 try:
                     if not success:
                         if args.get_url:
-                            browser = webdriver.Chrome(options=options)
+                            func = "get_url"
+                            tqdm.write(func)
+                            browser = webdriver.Chrome(service=service, options=chrome_options)
                             spider = SSSBWebSpider(browser)
                             spider.get_urls()
                         if args.check_url:
-                            browser = webdriver.Chrome(options=options)
+                            func = "check_url"
+                            tqdm.write(func)
+                            browser = webdriver.Chrome(service=service, options=chrome_options)
                             spider = SSSBWebSpider(browser)
                             spider.check_apartment_urls()
                         if args.check_filter:
+                            func = "check_filter"
+                            tqdm.write(func)
                             check_personal_filters()
 
                         success = True
                 except Exception as e:
-                    print("Error occurs: ", e)
+                    print(f"{func} Error occurs: {e}")
                 finally:
                     if args.get_url or args.check_url:
                         spider.quit()
@@ -368,18 +395,18 @@ def main(args):
             if time_used < args.crawl_interval:
                 restart_time = (datetime.now() + \
                                 timedelta(seconds=args.crawl_interval - time_used)).strftime("%Y-%m-%d %H:%M:%S")
-                print("Sleep {:5.3f}s, Restart at {}".format(args.crawl_interval - time_used, restart_time))
+                print("{} Sleep {:5.3f}s, Restart at {}".format(func, args.crawl_interval - time_used, restart_time))
                 time.sleep(args.crawl_interval - time_used)
             else:
-                print("No sleep, Restart at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                print("{} No sleep, Restart at {}".format(func, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     else:
         if args.get_url:
-            browser = webdriver.Chrome(options=options)
+            browser = webdriver.Chrome(service=service, options=chrome_options)
             spider = SSSBWebSpider(browser)
             spider.get_urls()
             spider.quit()
         if args.check_url:
-            browser = webdriver.Chrome(options=options)
+            browser = webdriver.Chrome(service=service, options=chrome_options)
             spider = SSSBWebSpider(browser)
             spider.check_apartment_urls()
             spider.quit()

@@ -1,0 +1,23 @@
+version: '3.3'
+
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.logtgpt-web.rule=Host(`lotggpt.xyzs.app`)"
+      - "traefik.http.services.logtgpt-web.loadbalancer.server.port=8081"
+      - "traefik.http.routers.logtgpt-web.entrypoints=web,websecure"
+      - "traefik.http.routers.logtgpt-web.tls.certresolver=sslresolver"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

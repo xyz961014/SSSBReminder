@@ -1,0 +1,54 @@
+version: '3.3'
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8082
+    volumes:
+      - .:/app
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+
+  get_url:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python check_sssb.py --headless --endless --get_url
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+
+  check_url:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python check_sssb.py --headless --endless --check_url
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+
+  check_filter:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python check_sssb.py --headless --endless --check_filter
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+
+  mongo:
+    image: mongo:5
+    ports:
+      - "1027:27017"
+    volumes:
+      - ./db:/data/db
+

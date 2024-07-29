@@ -9,9 +9,7 @@ import json
 
 import socket
 hostname = socket.gethostname()
-mongo_path = "mongodb://localhost:27017"
-if hostname == "xyz-ENVY-15":
-    mongo_path = "mongodb://localhost:1027"
+mongo_path = "mongodb://mongo:27017"
 client = pymongo.MongoClient(mongo_path)
 db = client["SSSB"]
 

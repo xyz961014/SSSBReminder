@@ -19,9 +19,9 @@ This project is composed of three parts:
 To run the project, run following commands simultaneously (recommended on a server, probably in a tmux session)
 
 ```bash
-python check_sssb.py --end_less --head_less --get_url  
-python check_sssb.py --end_less --head_less --check_url
-python check_sssb.py --end_less --head_less --check_filter
+python check_sssb.py --endless --headless --get_url  
+python check_sssb.py --endless --headless --check_url
+python check_sssb.py --endless --headless --check_filter
 ```
 
 By default, the script will collect housing information and check filters every 30 minutes.
