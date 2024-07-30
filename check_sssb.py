@@ -8,8 +8,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.webdriver.chrome.options import Options
 from datetime import date, datetime, timedelta
-from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus, ApartmentAmount
-from sssb_item import PersonalFilter
 import requests 
 import time
 import random
@@ -21,8 +19,13 @@ import pymongo
 from time import sleep
 from pprint import pprint
 from tqdm import tqdm
+from pathlib import Path
 import base64
 import emoji
+
+from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus, ApartmentAmount
+from sssb_item import PersonalFilter
+
 import ipdb
 
 
@@ -46,17 +49,21 @@ def parse_args():
                         help="retry when not crawled")
     parser.add_argument("--credit_day_begin", type=str, default="2000-01-01",
                         help="set a date when credit days begin to accumulate")
-    parser.add_argument("--debug", action="store_true")
+
+    parser.add_argument("--local", action="store_true")
 
     args = parser.parse_args()
     return args
 
 
 class SSSBWebSpider(object):
-    def __init__(self, browser):
+    def __init__(self, chromedriver_path, options):
         self.apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/available-apartments/?pagination=0&paginationantal=0"
         self.new_apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/new-constructions/?pagination=0&paginationantal=0"
-        self.browser = browser
+        self.chromedriver_path = chromedriver_path
+        self.options = options
+        service = ChromeService(executable_path=chromedriver_path)
+        self.browser = webdriver.Chrome(service=service, options=options)
         self.wait = WebDriverWait(self.browser, 20)
         self.apartment_urls = []
 
@@ -125,6 +132,7 @@ class SSSBWebSpider(object):
          ddl,
          queue_len,
          most_credit) = self.get_url_info(url)
+
         if ApartmentInfo.find_one({"object_number": object_number}) is None:
             # add new apartment
             info_item = ApartmentInfo(name=name,
@@ -149,8 +157,8 @@ class SSSBWebSpider(object):
         else:
             # update apartment info
             info_item = ApartmentInfo.find_one({"object_number": object_number})
-            if not hasattr(info_item, "distances") or info_item.distances is None:
-                info_item.get_distance("KTH")
+            if not hasattr(info_item, "distances") or info_item.distances is None or info_item.distances == {}:
+                info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
             info_item.save()
 
         status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
@@ -242,7 +250,7 @@ class SSSBWebSpider(object):
         accommodation_type = attributes["Type of accommodation:"]  \
                              if "Type of accommodation:" in attributes.keys() else None
 
-        living_space = attributes["Living space (approx.):"] \
+        living_space = attributes["Living space:"] \
                        if "Living space (approx.):" in attributes.keys() else None
         if living_space is not None:
             living_space = re.sub("[^0-9]", "", living_space)
@@ -334,30 +342,38 @@ def check_personal_filters():
 
 
 def main(args):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    chrome_path = '/chrome-headless-shell-linux64/chrome-headless-shell'
-    chromedriver_path = '/chromedriver-linux64/chromedriver'
-    service = ChromeService(executable_path=chromedriver_path)
+    current_dir = Path(__file__).parent
+    if args.local:
+        chrome_path = (current_dir / 'chrome-linux64/chrome').as_posix()
+        chrome_path = (current_dir / 'chrome-headless-shell-linux64/chrome-headless-shell').as_posix()
+        chromedriver_path = (current_dir / 'chromedriver-linux64/chromedriver').as_posix()
+        service = ChromeService(executable_path=chromedriver_path)
 
-    #chrome_options = webdriver.ChromeOptions()
-    chrome_options = Options()
-    chrome_options.binary_location = chrome_path
-    chrome_options.headless = args.headless
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--remote-debugging-port=9222")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-software-rasterizer")
-    chrome_options.add_argument("--disable-setuid-sandbox")
-    chrome_options.add_argument("--disable-extensions")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-application-cache")
-    chrome_options.add_argument("--disable-infobars")
-    chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--single-process")
-    #options.add_argument("--proxy-server=127.0.0.1:8118")
+        chrome_options = Options()
+        chrome_options.binary_location = chrome_path
+        chrome_options.headless = args.headless
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
 
-    date_begin = datetime.strptime(args.credit_day_begin, "%Y-%m-%d")
+    else:
+        chrome_path = '/chrome-headless-shell-linux64/chrome-headless-shell'
+        chromedriver_path = '/chromedriver-linux64/chromedriver'
+        service = ChromeService(executable_path=chromedriver_path)
+
+        chrome_options = Options()
+        chrome_options.binary_location = chrome_path
+        chrome_options.headless = args.headless
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--remote-debugging-port=9222")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-setuid-sandbox")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-application-cache")
+        chrome_options.add_argument("--disable-infobars")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--single-process")
 
     func = ""
     if args.endless:
@@ -370,14 +386,12 @@ def main(args):
                         if args.get_url:
                             func = "get_url"
                             tqdm.write(func)
-                            browser = webdriver.Chrome(service=service, options=chrome_options)
-                            spider = SSSBWebSpider(browser)
+                            spider = SSSBWebSpider(chromedriver_path, chrome_options)
                             spider.get_urls()
                         if args.check_url:
                             func = "check_url"
                             tqdm.write(func)
-                            browser = webdriver.Chrome(service=service, options=chrome_options)
-                            spider = SSSBWebSpider(browser)
+                            spider = SSSBWebSpider(chromedriver_path, chrome_options)
                             spider.check_apartment_urls()
                         if args.check_filter:
                             func = "check_filter"
@@ -401,13 +415,11 @@ def main(args):
                 print("{} No sleep, Restart at {}".format(func, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     else:
         if args.get_url:
-            browser = webdriver.Chrome(service=service, options=chrome_options)
-            spider = SSSBWebSpider(browser)
+            spider = SSSBWebSpider(chromedriver_path, chrome_options)
             spider.get_urls()
             spider.quit()
         if args.check_url:
-            browser = webdriver.Chrome(service=service, options=chrome_options)
-            spider = SSSBWebSpider(browser)
+            spider = SSSBWebSpider(chromedriver_path, chrome_options)
             spider.check_apartment_urls()
             spider.quit()
         if args.check_filter:

@@ -29,11 +29,11 @@ from sssb_item import PersonalFilter
 import socket
 hostname = socket.gethostname()
 
-template_path = "/root/projects/SSSBReminder/SSSB/SSSB/templates"
-if hostname == "xyz-ENVY-15":
-    template_path = "/home/xyz/Documents/Projects/web_check/SSSBReminder/SSSB/SSSB/templates"
-
-CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
+#template_path = "/root/projects/SSSBReminder/SSSB/SSSB/templates"
+#if hostname == "xyz-ENVY-15":
+#    template_path = "/home/xyz/Documents/Projects/web_check/SSSBReminder/SSSB/SSSB/templates"
+#
+#CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader(template_path))
 
 
 #mongo_path = "mongodb://localhost:27017"
@@ -394,7 +394,7 @@ def apartment_status(request):
         return HttpResponse(input_area + \
                             object_info_table + \
                             "<div class='col-lg-12'>" + \
-                            object_line.render_embed() + \
+                            object_line.render_embed(template_name="simple_chart.html") + \
                             "</div>")
     else:
         return HttpResponse(input_area)

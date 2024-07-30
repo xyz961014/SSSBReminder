@@ -131,3 +131,6 @@ dmypy.json
 *.swp
 resources/
 db/
+chrome-linux64/
+chromedriver-linux64/
+chrome-headless-shell-linux64/

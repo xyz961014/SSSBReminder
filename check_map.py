@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -51,7 +52,8 @@ class GoogleMapWebSpider(object):
         try:
             self.wait.until(EC.visibility_of_all_elements_located((By.XPATH, '//*[@id="yDmH0d"]/c-wiz/div/div/div/div[2]/div[1]/div[3]/div[1]/div[1]/form[2]/div/div/button')))
             close_button = self.browser.find_element(by="xpath", value='//*[@id="yDmH0d"]/c-wiz/div/div/div/div[2]/div[1]/div[3]/div[1]/div[1]/form[2]/div/div/button')
-            close_button.click()
+            #close_button.click()
+            self.browser.execute_script("arguments[0].click();", close_button)
         except:
             print("No Cookie page")
 
@@ -135,14 +137,17 @@ class GoogleMapWebSpider(object):
     def quit(self):
         self.browser.quit()
 
-def get_distance(place_from, place_to, mode):
-    options = webdriver.ChromeOptions()
-    options.headless = True
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
+def get_distance(place_from, place_to, mode, chromedriver_path, options=None):
 
-    #print("{} From {} To {}.".format(mode, place_from, place_to))
-    browser = webdriver.Chrome(options=options)
+    if options is None:
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+
+    service = ChromeService(executable_path=chromedriver_path)
+    browser = webdriver.Chrome(service=service, options=options)
+
     spider = GoogleMapWebSpider(browser)
     distance = spider.get_distance(place_from, place_to, mode=mode)
     spider.quit()

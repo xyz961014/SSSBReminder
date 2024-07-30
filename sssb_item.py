@@ -7,10 +7,18 @@ from datetime import date, datetime, timedelta
 import pytz
 import json
 
+from pymongo.errors import ServerSelectionTimeoutError
+
 import socket
 hostname = socket.gethostname()
 mongo_path = "mongodb://mongo:27017"
-client = pymongo.MongoClient(mongo_path)
+mongo_path_local = "mongodb://localhost:1027"
+try:
+    client = pymongo.MongoClient(mongo_path, serverSelectionTimeoutMS=5000)
+    client.admin.command("ping")
+except ServerSelectionTimeoutError as e:
+    client = pymongo.MongoClient(mongo_path_local, serverSelectionTimeoutMS=5000)
+    client.admin.command("ping")
 db = client["SSSB"]
 
 from send_mail import send_mail, build_message
@@ -188,12 +196,16 @@ class ApartmentInfo(SSSBItem):
                 self.floor = None
         return self.floor
 
-    def get_distance(self, place_to):
+    def get_distance(self, place_to, chromedriver_path, options=None):
         if not hasattr(self, "distances") or self.distances is None:
             self.distances = {}
             try:
-                transit_distance = get_distance(self.address, place_to, "transit") 
-                cycling_distance = get_distance(self.address, place_to, "cycling") 
+                transit_distance = get_distance(self.address, place_to, "transit", 
+                                                chromedriver_path=chromedriver_path,
+                                                options=options) 
+                cycling_distance = get_distance(self.address, place_to, "cycling",
+                                                chromedriver_path=chromedriver_path,
+                                                options=options) 
                 self.distances[place_to] = {
                         "transit": transit_distance,
                         "cycling": cycling_distance
@@ -203,8 +215,12 @@ class ApartmentInfo(SSSBItem):
         else:
             if place_to not in self.distances.keys():
                 try:
-                    transit_distance = get_distance(self.address, place_to, "transit") 
-                    cycling_distance = get_distance(self.address, place_to, "cycling") 
+                    transit_distance = get_distance(self.address, place_to, "transit",
+                                                    chromedriver_path=chromedriver_path,
+                                                    options=options) 
+                    cycling_distance = get_distance(self.address, place_to, "cycling",
+                                                    chromedriver_path=chromedriver_path,
+                                                    options=options) 
                     self.distances[place_to] = {
                             "transit": transit_distance,
                             "cycling": cycling_distance
