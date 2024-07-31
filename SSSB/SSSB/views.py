@@ -113,7 +113,7 @@ def new_filter(request):
 
 def index(request):
     html_data = {}
-    return render(request, "index.html", html_data)
+    return render(request, "page_index.html", html_data)
 
 def search_apartments(request):
 

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic import TemplateView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -20,3 +21,7 @@ def get_status(request):
     
     serializer = ApartmentAmountSerializer(status)
     return Response(serializer.data)
+
+
+class IndexView(TemplateView):
+    template_name = 'index.html'
