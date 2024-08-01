@@ -15,7 +15,7 @@ class ApartmentAmountViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def get_status(request):
     try:
-        status = ApartmentAmount.objects.latest('_id')  # 获取最新的状态记录
+        status = ApartmentAmount.objects.latest('_id')
     except ApartmentAmount.DoesNotExist:
         return Response({'error': 'No status available'}, status=404)
     
