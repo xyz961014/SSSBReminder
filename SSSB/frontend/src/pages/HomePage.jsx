@@ -17,9 +17,9 @@ import Paper from '@mui/material/Paper';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
-import { mainListItems, secondaryListItems } from './listItems';
-import Chart from './Chart';
-import Apartments from './Apartments';
+import Filter from './components/Filter';
+import Chart from './components/Chart';
+import Apartments from './components/Apartments';
 import { fetchApartmentAmount } from '../Api';
 
 
@@ -98,57 +98,51 @@ const HomePage = () => {
       <Helmet>
         <title>SSSB Reminder</title>
       </Helmet>
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <AppBar position="absolute" open={open}>
-          <Toolbar
-            sx={{
-              pr: '24px', // keep right padding when drawer closed
-            }}
+      <CssBaseline />
+
+      <Grid container>
+        <Grid
+          item
+          xs={12}
+        > 
+          <AppBar 
+            position="absolute"
           >
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              sx={{
-                marginRight: '36px',
-                ...(open && { display: 'none' }),
-              }}
+            <Toolbar
             >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
-              noWrap
-              sx={{ flexGrow: 1 }}
-            >
-              SSSB Reminder
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Drawer variant="permanent" open={open}>
-          <Toolbar
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              px: [1],
-            }}
-          >
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <List component="nav">
-            {mainListItems}
-            <Divider sx={{ my: 1 }} />
-            {secondaryListItems}
-          </List>
-        </Drawer>
+              <Typography
+                component="h1"
+                variant="h6"
+                color="inherit"
+                noWrap
+                sx={{ flexGrow: 1 }}
+              >
+                SSSB Reminder
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        </Grid> 
+        <Grid
+          item
+          xs={12}
+          sm={5}
+          lg={4}
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            flexDirection: 'column',
+            backgroundColor: 'background.paper',
+            borderRight: { sm: 'none', md: '1px solid' },
+            borderColor: { sm: 'none', md: 'divider' },
+            alignItems: 'start',
+            px: 4,
+            gap: 4,
+            height: '100vh',
+            overflow: 'auto',
+          }}
+        >
+          <Toolbar />
+          <Filter/>
+        </Grid>
         <Box
           component="main"
           sx={{
@@ -184,7 +178,7 @@ const HomePage = () => {
             </Grid>
           </Container>
         </Box>
-      </Box>
+      </Grid>
     </ThemeProvider>
   );
 }
