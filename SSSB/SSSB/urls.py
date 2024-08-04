@@ -16,9 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
-#from .views import MyModelViewSet
 
-router = DefaultRouter()
+#router = DefaultRouter()
 #router.register(r'mymodel', MyModelViewSet)
 
 from . import views

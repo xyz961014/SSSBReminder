@@ -13,8 +13,12 @@ import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
+
+import { fetchRegions, fetchTypes, fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
 
 const FormGrid = styled(Grid)(() => ({
   display: 'flex',
@@ -38,8 +42,21 @@ export default function Filter() {
   const [types, setTypes] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState([]);
   const [selectedType, setSelectedType] = useState([]);
+
+  const [spaceMin, setSpaceMin] = useState(0);
+  const [spaceMax, setSpaceMax] = useState(200);
   const [spaceRange, setSpaceRange] = useState([0, 100]);
+
+  const [rentMin, setRentMin] = useState(0);
+  const [rentMax, setRentMax] = useState(20000);
   const [rentRange, setRentRange] = useState([0, 10000]);
+
+  const [floorMin, setFloorMin] = useState(-5);
+  const [floorMax, setFloorMax] = useState(25);
+  const [floorRange, setFloorRange] = useState([0, 10000]);
+
+  const [creditMin, setCreditMin] = useState(0);
+  const [creditMax, setCreditMax] = useState(2000);
   const [creditRange, setCreditRange] = useState([0, 1000]);
 
   const handleSpaceRangeChange = (event, newValue) => {
@@ -50,6 +67,10 @@ export default function Filter() {
     setRentRange(newValue);
   };
 
+  const handleFloorRangeChange = (event, newValue) => {
+    setFloorRange(newValue);
+  };
+
   const handleCreditRangeChange = (event, newValue) => {
     setCreditRange(newValue);
   };
@@ -57,20 +78,76 @@ export default function Filter() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const response = await axios.get('https://api.example.com/data');
-        const regions = [
-          'Strix',
-          'Lappis',
-          'Forum',
-          'XXX',
-        ];
+        const response = await fetchRegions();
+        const regions = response.data;
         setRegions(regions);
-        const types = [
-          "Studio",
-          "Apartment",
-          "Corridor",
-        ];
+      } catch (err) {
+      }
+
+      try {
+        const response = await fetchTypes();
+        const types = response.data;
         setTypes(types);
+      } catch (err) {
+      }
+
+      try {
+        const response = await fetchSpaceRange();
+        var spaceRange = [0, 100];
+        if (response.data.min != null) {
+          spaceRange[0] = response.data.min;
+          setSpaceMin(response.data.min);
+        }
+        if (response.data.max != null) {
+          spaceRange[1] = response.data.max;
+          setSpaceMax(response.data.max);
+        }
+        setSpaceRange(spaceRange);
+      } catch (err) {
+      }
+
+      try {
+        const response = await fetchRentRange();
+        var rentRange = [0, 10000];
+        if (response.data.min != null) {
+          rentRange[0] = response.data.min;
+          setRentMin(response.data.min);
+        }
+        if (response.data.max != null) {
+          rentRange[1] = response.data.max;
+          setRentMax(response.data.max);
+        }
+        setRentRange(rentRange);
+      } catch (err) {
+      }
+
+      try {
+        const response = await fetchFloorRange();
+        var floorRange = [0, 10];
+        if (response.data.min != null) {
+          floorRange[0] = response.data.min;
+          setFloorMin(response.data.min);
+        }
+        if (response.data.max != null) {
+          floorRange[1] = response.data.max;
+          setFloorMax(response.data.max);
+        }
+        setFloorRange(floorRange);
+      } catch (err) {
+      }
+
+      try {
+        const response = await fetchCreditRange();
+        var creditRange = [0, 1000];
+        if (response.data.min != null) {
+          creditRange[0] = response.data.min;
+          setCreditMin(response.data.min);
+        }
+        if (response.data.max != null) {
+          creditRange[1] = response.data.max;
+          setCreditMax(response.data.max);
+        }
+        setCreditRange(creditRange);
       } catch (err) {
       }
     };
@@ -171,7 +248,7 @@ export default function Filter() {
 
         <FormGrid item xs={12}>
           <FormLabel htmlFor="space">
-            Living Space
+            Living Space (m²)
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <Slider
@@ -179,8 +256,8 @@ export default function Filter() {
               value={spaceRange}
               onChange={handleSpaceRangeChange}
               valueLabelDisplay="on"
-              min={0}
-              max={200}
+              min={spaceMin}
+              max={spaceMax}
               sx={{ mt: 5 }}
             />
           </Box>
@@ -188,7 +265,7 @@ export default function Filter() {
 
         <FormGrid item xs={12}>
           <FormLabel htmlFor="rent">
-            Rent
+            Rent (SEK)
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <Slider
@@ -196,8 +273,25 @@ export default function Filter() {
               value={rentRange}
               onChange={handleRentRangeChange}
               valueLabelDisplay="on"
-              min={0}
-              max={20000}
+              min={rentMin}
+              max={rentMax}
+              sx={{ mt: 5 }}
+            />
+          </Box>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="floor">
+            Floor
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
+            <Slider
+              getAriaLabel={() => 'Floor range'}
+              value={floorRange}
+              onChange={handleFloorRangeChange}
+              valueLabelDisplay="on"
+              min={floorMin}
+              max={floorMax}
               sx={{ mt: 5 }}
             />
           </Box>
@@ -213,8 +307,8 @@ export default function Filter() {
               value={creditRange}
               onChange={handleCreditRangeChange}
               valueLabelDisplay="on"
-              min={0}
-              max={3000}
+              min={creditMin}
+              max={creditMax}
               sx={{ mt: 5 }}
             />
           </Box>
@@ -235,6 +329,74 @@ export default function Filter() {
           />
         </FormGrid>
         */}
+
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="electricity inlcude">
+            Electricity Included
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
+            <RadioGroup
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+            >
+              <FormControlLabel value={true} control={<Radio />} label="Yes" />
+              <FormControlLabel value={false} control={<Radio />} label="No" />
+              <FormControlLabel value={''} control={<Radio />} label="Not Specified" />
+            </RadioGroup>
+          </Box>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="June & July Free">
+            June & July Freed
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
+            <RadioGroup
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+            >
+              <FormControlLabel value={true} control={<Radio />} label="Yes" />
+              <FormControlLabel value={false} control={<Radio />} label="No" />
+              <FormControlLabel value={''} control={<Radio />} label="Not Specified" />
+            </RadioGroup>
+          </Box>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="Max 4 Years">
+            Max 4 Years
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
+            <RadioGroup
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+            >
+              <FormControlLabel value={true} control={<Radio />} label="Yes" />
+              <FormControlLabel value={false} control={<Radio />} label="No" />
+              <FormControlLabel value={''} control={<Radio />} label="Not Specified" />
+            </RadioGroup>
+          </Box>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="Short Rent">
+            Short Rent
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
+            <RadioGroup
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+            >
+              <FormControlLabel value={true} control={<Radio />} label="Yes" />
+              <FormControlLabel value={false} control={<Radio />} label="No" />
+              <FormControlLabel value={''} control={<Radio />} label="Not Specified" />
+            </RadioGroup>
+          </Box>
+        </FormGrid>
 
       </Grid>
     </React.Fragment>

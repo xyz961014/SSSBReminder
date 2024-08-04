@@ -198,7 +198,10 @@ class ApartmentInfo(SSSBItem):
 
     def get_distance(self, place_to, chromedriver_path, options=None):
         if not hasattr(self, "distances") or self.distances is None:
-            self.distances = {}
+            self.distances = {
+                "transit": [],
+                "cycling": [],
+            }
             try:
                 transit_distance = get_distance(self.address, place_to, "transit", 
                                                 chromedriver_path=chromedriver_path,
@@ -206,25 +209,28 @@ class ApartmentInfo(SSSBItem):
                 cycling_distance = get_distance(self.address, place_to, "cycling",
                                                 chromedriver_path=chromedriver_path,
                                                 options=options) 
-                self.distances[place_to] = {
-                        "transit": transit_distance,
-                        "cycling": cycling_distance
-                                           }
+                self.distances["transit"].append(transit_distance)
+                self.distances["cycling"].append(cycling_distance)
+
             except Exception as e:
                 print(e)
         else:
-            if place_to not in self.distances.keys():
+            transit_places = [d["to"] for d in self.distances["transit"]]
+            cycling_places = [d["to"] for d in self.distances["cycling"]]
+            if place_to not in transit_places:
                 try:
                     transit_distance = get_distance(self.address, place_to, "transit",
                                                     chromedriver_path=chromedriver_path,
                                                     options=options) 
+                    self.distances["transit"].append(transit_distance)
+                except Exception as e:
+                    print(e)
+            if place_to not in cycling_places:
+                try:
                     cycling_distance = get_distance(self.address, place_to, "cycling",
                                                     chromedriver_path=chromedriver_path,
                                                     options=options) 
-                    self.distances[place_to] = {
-                            "transit": transit_distance,
-                            "cycling": cycling_distance
-                                               }
+                    self.distances["cycling"].append(cycling_distance)
                 except Exception as e:
                     print(e)
         self.save()

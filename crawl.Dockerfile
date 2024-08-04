@@ -42,16 +42,6 @@ RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.
     && rm chromedriver-linux64.zip \
     && chmod +x /chromedriver-linux64/chromedriver
 
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
-RUN bash nodesource_setup.sh
-RUN apt-get install -y nodejs
-
-WORKDIR /app/SSSB/frontend
-COPY . /app
-
-RUN npm install
-RUN npm run build
-
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
