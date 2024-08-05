@@ -18,6 +18,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 
+import LoadingBox from './LoadingBox';
 import { fetchRegions, fetchTypes, fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
 
 const FormGrid = styled(Grid)(() => ({
@@ -36,8 +37,11 @@ const MenuProps = {
   },
 };
 
-export default function Filter() {
+export default function Filter({ onFilterChange }) {
   const theme = useTheme();
+
+  const [loading, setLoading] = useState(true);
+
   const [regions, setRegions] = useState([]);
   const [types, setTypes] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState([]);
@@ -59,101 +63,94 @@ export default function Filter() {
   const [creditMax, setCreditMax] = useState(2000);
   const [creditRange, setCreditRange] = useState([0, 1000]);
 
-  const handleSpaceRangeChange = (event, newValue) => {
-    setSpaceRange(newValue);
-  };
-
-  const handleRentRangeChange = (event, newValue) => {
-    setRentRange(newValue);
-  };
-
-  const handleFloorRangeChange = (event, newValue) => {
-    setFloorRange(newValue);
-  };
-
-  const handleCreditRangeChange = (event, newValue) => {
-    setCreditRange(newValue);
-  };
+  const [electricityIncluded, setEletricityIncluded] = useState("");
+  const [summerFree, setSummerFree] = useState("");
+  const [max4Years, setMax4Years] = useState("");
+  const [shortRent, setShortRent] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchRegions();
-        const regions = response.data;
+        const [
+          regionsResponse,
+          typesResponse,
+          spaceRangeResponse,
+          rentRangeResponse,
+          floorRangeResponse,
+          creditRangeResponse,
+        ] = await Promise.all([
+          fetchRegions(),
+          fetchTypes(),
+          fetchSpaceRange(),
+          fetchRentRange(),
+          fetchFloorRange(),
+          fetchCreditRange(),
+        ]);
+  
+        const regions = regionsResponse.data;
         setRegions(regions);
-      } catch (err) {
-      }
-
-      try {
-        const response = await fetchTypes();
-        const types = response.data;
+  
+        const types = typesResponse.data;
         setTypes(types);
-      } catch (err) {
-      }
-
-      try {
-        const response = await fetchSpaceRange();
-        var spaceRange = [0, 100];
-        if (response.data.min != null) {
-          spaceRange[0] = response.data.min;
-          setSpaceMin(response.data.min);
-        }
-        if (response.data.max != null) {
-          spaceRange[1] = response.data.max;
-          setSpaceMax(response.data.max);
-        }
+  
+        const spaceRange = [spaceRangeResponse.data.min || 0, spaceRangeResponse.data.max || 100];
+        setSpaceMin(spaceRangeResponse.data.min || 0);
+        setSpaceMax(spaceRangeResponse.data.max || 100);
         setSpaceRange(spaceRange);
-      } catch (err) {
-      }
-
-      try {
-        const response = await fetchRentRange();
-        var rentRange = [0, 10000];
-        if (response.data.min != null) {
-          rentRange[0] = response.data.min;
-          setRentMin(response.data.min);
-        }
-        if (response.data.max != null) {
-          rentRange[1] = response.data.max;
-          setRentMax(response.data.max);
-        }
+  
+        const rentRange = [rentRangeResponse.data.min || 0, rentRangeResponse.data.max || 10000];
+        setRentMin(rentRangeResponse.data.min || 0);
+        setRentMax(rentRangeResponse.data.max || 10000);
         setRentRange(rentRange);
-      } catch (err) {
-      }
-
-      try {
-        const response = await fetchFloorRange();
-        var floorRange = [0, 10];
-        if (response.data.min != null) {
-          floorRange[0] = response.data.min;
-          setFloorMin(response.data.min);
-        }
-        if (response.data.max != null) {
-          floorRange[1] = response.data.max;
-          setFloorMax(response.data.max);
-        }
+  
+        const floorRange = [floorRangeResponse.data.min || 0, floorRangeResponse.data.max || 10];
+        setFloorMin(floorRangeResponse.data.min || 0);
+        setFloorMax(floorRangeResponse.data.max || 10);
         setFloorRange(floorRange);
-      } catch (err) {
-      }
-
-      try {
-        const response = await fetchCreditRange();
-        var creditRange = [0, 1000];
-        if (response.data.min != null) {
-          creditRange[0] = response.data.min;
-          setCreditMin(response.data.min);
-        }
-        if (response.data.max != null) {
-          creditRange[1] = response.data.max;
-          setCreditMax(response.data.max);
-        }
+  
+        const creditRange = [creditRangeResponse.data.min || 0, creditRangeResponse.data.max || 1000];
+        setCreditMin(creditRangeResponse.data.min || 0);
+        setCreditMax(creditRangeResponse.data.max || 1000);
         setCreditRange(creditRange);
+  
       } catch (err) {
+        // console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false); 
       }
     };
-
+  
     fetchData();
   }, []);
+
+ useEffect(() => {
+   if (onFilterChange) {
+     onFilterChange({
+       selectedRegion,
+       selectedType,
+       spaceRange,
+       rentRange,
+       floorRange,
+       creditRange,
+       electricityIncluded,
+       summerFree,
+       max4Years,
+       shortRent
+     });
+    }
+  }, [
+    selectedRegion,
+    selectedType,
+    spaceRange,
+    rentRange,
+    floorRange,
+    creditRange,
+    electricityIncluded,
+    summerFree,
+    max4Years,
+    shortRent,
+    onFilterChange
+  ]);
 
   const handleRegionChange = (event) => {
     const {
@@ -171,6 +168,7 @@ export default function Filter() {
 
   return (
     <React.Fragment>
+      <LoadingBox loading={loading}>
       <Grid container spacing={2}>
         <FormGrid item xs={12}>
           <FormLabel htmlFor="region">
@@ -181,19 +179,27 @@ export default function Filter() {
               labelId="demo-multiple-chip-label"
               id="demo-multiple-chip"
               multiple
+              displayEmpty
               value={selectedRegion}
               onChange={handleRegionChange}
               input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
               renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </Box>
+                selected.length === 0 ? (
+                  <em>Not Specified</em>
+                ) : (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip key={value} label={value} />
+                    ))}
+                  </Box>
+                )
               )}
               MenuProps={MenuProps}
               sx={{ flexGrow: 1 }}
             >
+              <MenuItem disabled value="">
+                <em>Not Specified</em>
+              </MenuItem>
               {regions.map((region) => (
                 <MenuItem
                   key={region}
@@ -203,8 +209,8 @@ export default function Filter() {
                 </MenuItem>
               ))}
             </Select>
-            <Button variant="text" sx={{ ml: 2}}>
-              Select All
+            <Button variant="text" sx={{ ml: 2}} onClick={() => {setSelectedRegion([])}}>
+              Clear All
             </Button>
           </Box>
         </FormGrid>
@@ -218,19 +224,27 @@ export default function Filter() {
               labelId="demo-multiple-chip-label"
               id="demo-multiple-chip"
               multiple
+              displayEmpty
               value={selectedType}
               onChange={handleTypeChange}
               input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
               renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </Box>
+                selected.length === 0 ? (
+                  <em>Not Specified</em>
+                ) : (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip key={value} label={value} />
+                    ))}
+                  </Box>
+                )
               )}
               MenuProps={MenuProps}
               sx={{ flexGrow: 1 }}
             >
+              <MenuItem disabled value="">
+                <em>Not Specified</em>
+              </MenuItem>
               {types.map((type) => (
                 <MenuItem
                   key={type}
@@ -240,8 +254,8 @@ export default function Filter() {
                 </MenuItem>
               ))}
             </Select>
-            <Button variant="text" sx={{ ml: 2}}>
-              Select All
+            <Button variant="text" sx={{ ml: 2}} onClick={() => {setSelectedType([]);}}>
+              Clear All
             </Button>
           </Box>
         </FormGrid>
@@ -254,7 +268,7 @@ export default function Filter() {
             <Slider
               getAriaLabel={() => 'Living space range'}
               value={spaceRange}
-              onChange={handleSpaceRangeChange}
+              onChange={(e) => setSpaceRange(e.target.value)}
               valueLabelDisplay="on"
               min={spaceMin}
               max={spaceMax}
@@ -271,7 +285,7 @@ export default function Filter() {
             <Slider
               getAriaLabel={() => 'Rent range'}
               value={rentRange}
-              onChange={handleRentRangeChange}
+              onChange={(e) => setRentRange(e.target.value)}
               valueLabelDisplay="on"
               min={rentMin}
               max={rentMax}
@@ -288,7 +302,7 @@ export default function Filter() {
             <Slider
               getAriaLabel={() => 'Floor range'}
               value={floorRange}
-              onChange={handleFloorRangeChange}
+              onChange={(e) => setFloorRange(e.target.value)}
               valueLabelDisplay="on"
               min={floorMin}
               max={floorMax}
@@ -305,7 +319,7 @@ export default function Filter() {
             <Slider
               getAriaLabel={() => 'Credit days range'}
               value={creditRange}
-              onChange={handleCreditRangeChange}
+              onChange={(e) => setCreditRange(e.target.value)}
               valueLabelDisplay="on"
               min={creditMin}
               max={creditMax}
@@ -339,6 +353,8 @@ export default function Filter() {
               row
               aria-labelledby="demo-row-radio-buttons-group-label"
               name="row-radio-buttons-group"
+              value={electricityIncluded}
+              onChange={(e) => setEletricityIncluded(e.target.value)}
             >
               <FormControlLabel value={true} control={<Radio />} label="Yes" />
               <FormControlLabel value={false} control={<Radio />} label="No" />
@@ -349,13 +365,15 @@ export default function Filter() {
 
         <FormGrid item xs={12}>
           <FormLabel htmlFor="June & July Free">
-            June & July Freed
+            June & July Free
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <RadioGroup
               row
               aria-labelledby="demo-row-radio-buttons-group-label"
               name="row-radio-buttons-group"
+              value={summerFree}
+              onChange={(e) => setSummerFree(e.target.value)}
             >
               <FormControlLabel value={true} control={<Radio />} label="Yes" />
               <FormControlLabel value={false} control={<Radio />} label="No" />
@@ -373,6 +391,8 @@ export default function Filter() {
               row
               aria-labelledby="demo-row-radio-buttons-group-label"
               name="row-radio-buttons-group"
+              value={max4Years}
+              onChange={(e) => setMax4Years(e.target.value)}
             >
               <FormControlLabel value={true} control={<Radio />} label="Yes" />
               <FormControlLabel value={false} control={<Radio />} label="No" />
@@ -390,6 +410,8 @@ export default function Filter() {
               row
               aria-labelledby="demo-row-radio-buttons-group-label"
               name="row-radio-buttons-group"
+              value={shortRent}
+              onChange={(e) => setShortRent(e.target.value)}
             >
               <FormControlLabel value={true} control={<Radio />} label="Yes" />
               <FormControlLabel value={false} control={<Radio />} label="No" />
@@ -399,6 +421,7 @@ export default function Filter() {
         </FormGrid>
 
       </Grid>
+      </LoadingBox>
     </React.Fragment>
   );
 }

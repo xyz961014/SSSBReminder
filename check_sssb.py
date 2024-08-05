@@ -152,11 +152,15 @@ class SSSBWebSpider(object):
                                       rent_free_june_and_july=url_item.rent_free_june_and_july,
                                       max_4_years=url_item.max_4_years
                                       )
-            info_item.get_distance("KTH")
+            info_item.get_floor()
+            info_item.get_current_bid()
+            info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
             info_item.save()
         else:
             # update apartment info
             info_item = ApartmentInfo.find_one({"object_number": object_number})
+            info_item.get_floor()
+            info_item.get_current_bid()
             if not hasattr(info_item, "distances") or info_item.distances is None or info_item.distances == {}:
                 info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
             info_item.save()
@@ -251,7 +255,7 @@ class SSSBWebSpider(object):
                              if "Type of accommodation:" in attributes.keys() else None
 
         living_space = attributes["Living space:"] \
-                       if "Living space (approx.):" in attributes.keys() else None
+                       if "Living space:" in attributes.keys() else None
         if living_space is not None:
             living_space = re.sub("[^0-9]", "", living_space)
             living_space = int(living_space)

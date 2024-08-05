@@ -97,3 +97,17 @@ def get_credit_range(request):
     max_credit = max(credits)
     
     return Response({'min': min_credit, 'max': max_credit})
+
+@api_view(['POST'])
+def get_filtered_apartments(request):
+    filter_data = request.data
+
+    filter_dict = {}
+    if "spaceRange" in filter_data.keys() and len(filter_data["spaceRange"]) == 2:
+        filter_dict["living_space__gte"] = filter_data["spaceRange"][0]
+        filter_dict["living_space__lte"] = filter_data["spaceRange"][1]
+
+    filtered_apartments = ApartmentInfo.objects.filter(**filter_dict)
+
+    serializer = ApartmentInfoSerializer(filtered_apartments, many=True)
+    return Response(serializer.data)

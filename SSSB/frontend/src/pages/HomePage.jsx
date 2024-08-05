@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet';
 import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
@@ -73,24 +74,16 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 const HomePage = () => {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const [amounts, setAmounts] = useState([]);
 
-  useEffect(() => {
-    const getAmounts = async () => {
-      try {
-        const response = await fetchApartmentAmount();
-        setAmounts(response.data);
-      } catch (err) {
-        console.error("Error fetching amounts:", err);
-      }
-    };
-    getAmounts();
+  const [filterData, setFilterData] = useState({});
+
+  const handleFilterDataChange = useCallback((data) => {
+    setFilterData(data);
   }, []);
-
 
 
   return (
@@ -141,11 +134,19 @@ const HomePage = () => {
           }}
         >
           <Toolbar />
-          <Filter/>
+          <Filter onFilterChange={handleFilterDataChange} />
         </Grid>
-        <Box
-          component="main"
+        <Grid
+          item
+          xs={12}
+          sm={7}
+          lg={8}
           sx={{
+            display: { xs: 'none', md: 'flex' },
+            flexDirection: 'column',
+            alignItems: 'start',
+            px: 4,
+            gap: 4,
             backgroundColor: (theme) =>
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
@@ -155,9 +156,14 @@ const HomePage = () => {
             overflow: 'auto',
           }}
         >
+        <Box
+          component="main"
+          sx={{ width: "100%" }}
+        >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
+              {/*
               <Grid item xs={12} md={12} lg={6}>
                 <Paper
                   sx={{
@@ -170,14 +176,16 @@ const HomePage = () => {
                   <Chart />
                 </Paper>
               </Grid>
+              */}
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <Apartments />
+                  <Apartments filterData={filterData} />
                 </Paper>
               </Grid>
             </Grid>
           </Container>
         </Box>
+        </Grid>
       </Grid>
     </ThemeProvider>
   );

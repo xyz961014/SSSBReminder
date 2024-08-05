@@ -90,7 +90,7 @@ class ApartmentInfo(models.Model):
     update_time = models.DateTimeField(null=True, blank=True, default=None)
     name = models.CharField(max_length=255, null=True, blank=True, default=None)
     object_number = models.CharField(max_length=255, null=True, blank=True, default=None)
-    url = models.URLField()
+    url = models.URLField(null=True, blank=True, default=None)
     housing_area = models.CharField(max_length=255, null=True, blank=True, default=None)
     address = models.CharField(max_length=255, null=True, blank=True, default=None)
     accommodation_type = models.CharField(max_length=255, null=True, blank=True, default=None)
@@ -114,7 +114,8 @@ class ApartmentInfo(models.Model):
     bid = djongo_models.EmbeddedField(
         model_container=Bid,
         null=True,
-        blank=True
+        blank=True,
+        default=None
     )
 
     class Meta:

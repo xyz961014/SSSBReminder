@@ -170,14 +170,17 @@ class ApartmentInfo(SSSBItem):
         if self.bid is None:
             statuses = ApartmentStatus.find_many({"object_number": self.object_number},
                                                  sort="update_time")
-            last_status = statuses[-1]
-            bid = {
-                    "queue_len": last_status.queue_len,
-                    "most_credit": last_status.most_credit
-                   }
-            if not self.is_active():
-                self.bid = bid
-                self.save()
+            if len(statuses) > 0:
+                last_status = statuses[-1]
+                bid = {
+                        "queue_len": last_status.queue_len,
+                        "most_credit": last_status.most_credit
+                       }
+                if self.is_active():
+                    self.bid = bid
+                    self.save()
+            else:
+                bid = None
         else:
             bid = self.bid
         return bid

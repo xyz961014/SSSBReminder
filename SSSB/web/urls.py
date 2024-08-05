@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import ApartmentAmountViewSet, ApartmentInfoViewSet
 from .views import get_regions, get_types
 from .views import get_space_range, get_rent_range, get_floor_range, get_credit_range
+from .views import get_filtered_apartments
 from .views import IndexView
 
 router = DefaultRouter()
@@ -18,4 +19,5 @@ urlpatterns = [
     path('get_rent_range', get_rent_range, name='get_rent_range'),
     path('get_floor_range', get_floor_range, name='get_floor_range'),
     path('get_credit_range', get_credit_range, name='get_credit_range'),
+    path('get_filtered_apartments', get_filtered_apartments, name='get_filtered_apartments'),
 ]
