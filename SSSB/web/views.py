@@ -1,11 +1,17 @@
+from datetime import datetime
+import pytz
+from pprint import pprint
+from django.utils import timezone
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.db.models import Q
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import ReadOnly
-from .models import ApartmentAmount, ApartmentInfo
-from .serializers import ApartmentAmountSerializer, ApartmentInfoSerializer
+from .models import ApartmentAmount, ApartmentInfo, ApartmentStatus
+from .serializers import ApartmentAmountSerializer, ApartmentInfoSerializer, ApartmentStatusSerializer
 
 class ApartmentAmountViewSet(viewsets.ModelViewSet):
     queryset = ApartmentAmount.objects.all()
@@ -16,6 +22,15 @@ class ApartmentInfoViewSet(viewsets.ModelViewSet):
     queryset = ApartmentInfo.objects.all()
     serializer_class = ApartmentInfoSerializer
     permission_classes = [ReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['object_number']
+
+class ApartmentStatusViewSet(viewsets.ModelViewSet):
+    queryset = ApartmentStatus.objects.all()
+    serializer_class = ApartmentStatusSerializer
+    permission_classes = [ReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['object_number']
 
 class IndexView(TemplateView):
     template_name = 'index.html'
@@ -82,8 +97,6 @@ def get_floor_range(request):
     
     return Response({'min': min_floor, 'max': max_floor})
 
-
-
 @api_view(['GET'])
 def get_credit_range(request):
     apartments = ApartmentInfo.objects.all()
@@ -102,12 +115,76 @@ def get_credit_range(request):
 def get_filtered_apartments(request):
     filter_data = request.data
 
+    #pprint(filter_data)
+
     filter_dict = {}
+    if "showExpired" in filter_data.keys():
+        if not filter_data["showExpired"]:
+            current_time_in_stockholm = timezone.now().astimezone(pytz.timezone("Europe/Stockholm"))
+            filter_dict["application_ddl__gt"] = current_time_in_stockholm
+
+    if "validFromBefore" in filter_data.keys() and filter_data["validFromBefore"] is not None:
+        valid_from_before = datetime.strptime(filter_data["validFromBefore"], '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.UTC)
+        filter_dict["valid_from__lte"] = valid_from_before
+
+    if "selectedRegion" in filter_data.keys() and len(filter_data["selectedRegion"]) > 0:
+        filter_dict["housing_area__in"] = filter_data["selectedRegion"]
+
+    if "selectedType" in filter_data.keys() and len(filter_data["selectedType"]) > 0:
+        filter_dict["accommodation_type__in"] = filter_data["selectedType"]
+
     if "spaceRange" in filter_data.keys() and len(filter_data["spaceRange"]) == 2:
         filter_dict["living_space__gte"] = filter_data["spaceRange"][0]
         filter_dict["living_space__lte"] = filter_data["spaceRange"][1]
 
+    if "rentRange" in filter_data.keys() and len(filter_data["rentRange"]) == 2:
+        filter_dict["monthly_rent__gte"] = filter_data["rentRange"][0]
+        filter_dict["monthly_rent__lte"] = filter_data["rentRange"][1]
+
+    if "floorRange" in filter_data.keys() and len(filter_data["floorRange"]) == 2:
+        filter_dict["floor__gte"] = filter_data["floorRange"][0]
+        filter_dict["floor__lte"] = filter_data["floorRange"][1]
+
+    if "electricityIncluded" in filter_data.keys() and filter_data["electricityIncluded"] != "":
+        filter_dict["electricity_include__in"] = [filter_data["electricityIncluded"] == "true"]
+
+    if "summerFree" in filter_data.keys() and filter_data["summerFree"] != "":
+        filter_dict["rent_free_june_and_july__in"] = [filter_data["summerFree"] == "true"]
+
+    if "max4Years" in filter_data.keys() and filter_data["max4Years"] != "":
+        filter_dict["max_4_years__in"] = [filter_data["max4Years"] == "true"]
+
+    if "shortRent" in filter_data.keys() and filter_data["shortRent"] != "":
+        filter_dict["end_date__isnull"] = filter_data["shortRent"] == "false"
+
     filtered_apartments = ApartmentInfo.objects.filter(**filter_dict)
+
+    if "creditRange" in filter_data.keys() and len(filter_data["creditRange"]) == 2:
+        credit_min = filter_data["creditRange"][0]
+        credit_max = filter_data["creditRange"][1]
+        filtered_apartments = [a for a in filtered_apartments 
+                               if a.bid is None or credit_min < a.bid['most_credit'] < credit_max]
+
+    #credits = [a.bid for a in filtered_apartments]
+    #pprint(filtered_apartments[0].valid_from)
 
     serializer = ApartmentInfoSerializer(filtered_apartments, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+def get_bid_history(request):
+    object_number = None
+    if "object_number" in request.data.keys():
+        object_number = request.data["object_number"]
+    
+    credits = [apartment.bid["most_credit"] for apartment in apartments if apartment.bid is not None]
+    
+    if not credits:
+        return Response({'min': None, 'max': None})
+
+    min_credit = min(credits)
+    max_credit = max(credits)
+    
+    return Response({'min': min_credit, 'max': max_credit})
+
+

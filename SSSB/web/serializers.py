@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Bid
-from .models import ApartmentAmount, ApartmentInfo
+from .models import ApartmentAmount, ApartmentInfo, ApartmentStatus
 
 class ApartmentAmountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,4 +17,9 @@ class ApartmentInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApartmentInfo
+        fields = '__all__'
+
+class ApartmentStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApartmentStatus
         fields = '__all__'

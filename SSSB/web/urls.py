@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ApartmentAmountViewSet, ApartmentInfoViewSet
+from .views import ApartmentAmountViewSet, ApartmentInfoViewSet, ApartmentStatusViewSet
 from .views import get_regions, get_types
 from .views import get_space_range, get_rent_range, get_floor_range, get_credit_range
 from .views import get_filtered_apartments
@@ -9,6 +9,7 @@ from .views import IndexView
 router = DefaultRouter()
 router.register(r'apartment_amount', ApartmentAmountViewSet)
 router.register(r'apartment_info', ApartmentInfoViewSet)
+router.register(r'apartment_status', ApartmentStatusViewSet)
 
 urlpatterns = [
     path('index', IndexView.as_view(), name='index'),

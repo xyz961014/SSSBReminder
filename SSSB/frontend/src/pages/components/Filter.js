@@ -1,11 +1,10 @@
 import * as React from 'react';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import Grid from '@mui/material/Grid';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
@@ -15,10 +14,12 @@ import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import Switch from '@mui/material/Switch';
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 
 import LoadingBox from './LoadingBox';
+import LocalDatePicker from './LocalDatePicker';
 import { fetchRegions, fetchTypes, fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
 
 const FormGrid = styled(Grid)(() => ({
@@ -41,6 +42,7 @@ export default function Filter({ onFilterChange }) {
   const theme = useTheme();
 
   const [loading, setLoading] = useState(true);
+  const [showExpired, setShowExpired] = useState(false);
 
   const [regions, setRegions] = useState([]);
   const [types, setTypes] = useState([]);
@@ -62,6 +64,8 @@ export default function Filter({ onFilterChange }) {
   const [creditMin, setCreditMin] = useState(0);
   const [creditMax, setCreditMax] = useState(2000);
   const [creditRange, setCreditRange] = useState([0, 1000]);
+
+  const [validFromBefore, setValidFromBefore] = useState(null);
 
   const [electricityIncluded, setEletricityIncluded] = useState("");
   const [summerFree, setSummerFree] = useState("");
@@ -99,7 +103,7 @@ export default function Filter({ onFilterChange }) {
         setSpaceRange(spaceRange);
   
         const rentRange = [rentRangeResponse.data.min || 0, rentRangeResponse.data.max || 10000];
-        setRentMin(rentRangeResponse.data.min || 0);
+        // setRentMin(rentRangeResponse.data.min || 0);
         setRentMax(rentRangeResponse.data.max || 10000);
         setRentRange(rentRange);
   
@@ -109,7 +113,7 @@ export default function Filter({ onFilterChange }) {
         setFloorRange(floorRange);
   
         const creditRange = [creditRangeResponse.data.min || 0, creditRangeResponse.data.max || 1000];
-        setCreditMin(creditRangeResponse.data.min || 0);
+        // setCreditMin(creditRangeResponse.data.min || 0);
         setCreditMax(creditRangeResponse.data.max || 1000);
         setCreditRange(creditRange);
   
@@ -132,10 +136,12 @@ export default function Filter({ onFilterChange }) {
        rentRange,
        floorRange,
        creditRange,
+       validFromBefore,
        electricityIncluded,
        summerFree,
        max4Years,
-       shortRent
+       shortRent,
+       showExpired,
      });
     }
   }, [
@@ -145,10 +151,12 @@ export default function Filter({ onFilterChange }) {
     rentRange,
     floorRange,
     creditRange,
+    validFromBefore,
     electricityIncluded,
     summerFree,
     max4Years,
     shortRent,
+    showExpired,
     onFilterChange
   ]);
 
@@ -170,6 +178,7 @@ export default function Filter({ onFilterChange }) {
     <React.Fragment>
       <LoadingBox loading={loading}>
       <Grid container spacing={2}>
+
         <FormGrid item xs={12}>
           <FormLabel htmlFor="region">
             Region
@@ -328,6 +337,18 @@ export default function Filter({ onFilterChange }) {
           </Box>
         </FormGrid>
 
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="valid from before">
+            Valid From Before
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center', mx: 0 }}>
+            <LocalDatePicker 
+              value={validFromBefore}
+              onChange={(value) => setValidFromBefore(value)}
+            />
+          </Box>
+        </FormGrid>
+
         {/*
         <FormGrid item xs={12}>
           <FormLabel htmlFor="distance to">
@@ -418,6 +439,19 @@ export default function Filter({ onFilterChange }) {
               <FormControlLabel value={''} control={<Radio />} label="Not Specified" />
             </RadioGroup>
           </Box>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <FormControlLabel 
+            control={
+              <Switch 
+                checked={showExpired}
+                onChange={(e) => setShowExpired(e.target.checked)}
+                inputProps={{ 'aria-label': 'controlled' }}
+              />
+            } 
+            label="Show Expired" 
+          />
         </FormGrid>
 
       </Grid>

@@ -167,22 +167,19 @@ class ApartmentInfo(SSSBItem):
         return ddl_time > now_time
 
     def get_current_bid(self):
-        if self.bid is None:
-            statuses = ApartmentStatus.find_many({"object_number": self.object_number},
-                                                 sort="update_time")
-            if len(statuses) > 0:
-                last_status = statuses[-1]
-                bid = {
-                        "queue_len": last_status.queue_len,
-                        "most_credit": last_status.most_credit
-                       }
-                if self.is_active():
-                    self.bid = bid
-                    self.save()
-            else:
-                bid = None
-        else:
-            bid = self.bid
+        bid = None
+        statuses = ApartmentStatus.find_many({"object_number": self.object_number},
+                                             sort="update_time")
+        if len(statuses) > 0:
+            last_status = statuses[-1]
+            bid = {
+                    "queue_len": last_status.queue_len,
+                    "most_credit": last_status.most_credit
+                   }
+            if self.is_active():
+                self.bid = bid
+                self.save()
+
         return bid
 
     def get_floor(self):

@@ -21,5 +21,3 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app/SSSB
 
-#CMD ["sh", "-c", "python ../check_sssb.py --endless --headless --get_url & python ../check_sssb.py --endless --headless --check_url"]
-#CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:8082 & python ../check_sssb.py --endless --headless --get_url & python ../check_sssb.py --endless --headless --check_url & python ../check_sssb.py --endless --headless --check_filter"]

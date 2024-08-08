@@ -133,6 +133,12 @@ class SSSBWebSpider(object):
          queue_len,
          most_credit) = self.get_url_info(url)
 
+        status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
+        status_item.save()
+
+        info_item.get_current_bid()
+        info_item.get_floor()
+
         if ApartmentInfo.find_one({"object_number": object_number}) is None:
             # add new apartment
             info_item = ApartmentInfo(name=name,
@@ -152,25 +158,17 @@ class SSSBWebSpider(object):
                                       rent_free_june_and_july=url_item.rent_free_june_and_july,
                                       max_4_years=url_item.max_4_years
                                       )
-            info_item.get_floor()
-            info_item.get_current_bid()
             info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
-            info_item.save()
         else:
             # update apartment info
             info_item = ApartmentInfo.find_one({"object_number": object_number})
-            info_item.get_floor()
-            info_item.get_current_bid()
             if not hasattr(info_item, "distances") or info_item.distances is None or info_item.distances == {}:
                 info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
-            info_item.save()
-
-        status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
-        status_item.save()
 
         url_item.crawled = True
         url_item.save()
 
+        info_item.save()
 
     #def update_apartment_status(self):
     #    apartments = ApartmentInfo.find_many({})

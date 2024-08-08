@@ -57,3 +57,4 @@ urllib3==1.26.19
 urllib3-secure-extra==0.1.0
 wcwidth==0.2.13
 wsproto==1.2.0
+django-filter==23.5

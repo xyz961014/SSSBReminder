@@ -19,7 +19,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 import Filter from './components/Filter';
-import Chart from './components/Chart';
 import Apartments from './components/Apartments';
 import { fetchApartmentAmount } from '../Api';
 
@@ -118,8 +117,8 @@ const HomePage = () => {
         <Grid
           item
           xs={12}
-          sm={5}
-          lg={4}
+          sm={4}
+          lg={3}
           sx={{
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
@@ -139,14 +138,12 @@ const HomePage = () => {
         <Grid
           item
           xs={12}
-          sm={7}
-          lg={8}
+          sm={8}
+          lg={9}
           sx={{
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
             alignItems: 'start',
-            px: 4,
-            gap: 4,
             backgroundColor: (theme) =>
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
@@ -161,22 +158,8 @@ const HomePage = () => {
           sx={{ width: "100%" }}
         >
           <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <Container sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
-              {/*
-              <Grid item xs={12} md={12} lg={6}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: 240,
-                  }}
-                >
-                  <Chart />
-                </Paper>
-              </Grid>
-              */}
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                   <Apartments filterData={filterData} />
