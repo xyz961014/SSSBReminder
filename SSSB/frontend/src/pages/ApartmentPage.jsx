@@ -39,7 +39,7 @@ const ApartmentPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Apartment</title>
+        <title>{apartmentInfo.name}</title>
       </Helmet>
       <Container maxWidth="lg">
         <Box

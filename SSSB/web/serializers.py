@@ -1,6 +1,15 @@
 from rest_framework import serializers
 from .models import Bid
-from .models import ApartmentAmount, ApartmentInfo, ApartmentStatus
+from .models import ApartmentAmount, ApartmentInfo, ApartmentStatus, PersonalFilter
+
+class JSONSerializerField(serializers.Field):
+    def to_internal_value(self, data):
+        return data 
+
+    def to_representation(self, value):
+        if isinstance(value, str):
+            return json.loads(value)
+        return value
 
 class ApartmentAmountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,4 +31,15 @@ class ApartmentInfoSerializer(serializers.ModelSerializer):
 class ApartmentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApartmentStatus
+        fields = '__all__'
+
+class PersonalFilterSerializer(serializers.ModelSerializer):
+    regions = JSONSerializerField()
+    types = JSONSerializerField()
+    living_space = JSONSerializerField()
+    rent = JSONSerializerField()
+    floor = JSONSerializerField()
+
+    class Meta:
+        model = PersonalFilter
         fields = '__all__'

@@ -8,6 +8,8 @@ import TableRow from '@mui/material/TableRow';
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from '@mui/material';
 import { Box, Chip } from '@mui/material';
+import moment from 'moment';
+
 import Title from './Title';
 
 import LoadingBox from './LoadingBox';
@@ -44,12 +46,22 @@ const columns = [
     headerName: 'Space', 
     width: 100, 
     valueGetter: (value, row) => `${value} m²`,
+    sortComparator: (v1, v2, param1, param2) => {
+        const space1 = parseFloat(v1.replace(' m²', ''));
+        const space2 = parseFloat(v2.replace(' m²', ''));
+        return space1 - space2;
+    },
     flex: 1,
   },
   { 
     field: 'monthly_rent', 
     headerName: 'Rent', 
     width: 100, 
+    sortComparator: (v1, v2, param1, param2) => {
+        const rent1 = parseFloat(v1.replace(' SEK', ''));
+        const rent2 = parseFloat(v2.replace(' SEK', ''));
+        return rent1 - rent2;
+    },
     valueGetter: (value, row) => `${value} SEK`,
     flex: 1,
   },
@@ -60,8 +72,20 @@ const columns = [
     valueGetter: (value, row) => row.bid ? row.bid.most_credit : null,
     flex: 1,
   },
-  { field: 'application_ddl', headerName: 'DDL', width: 250, flex: 1 },
-  { field: 'valid_from', headerName: 'Valid From', width: 250, flex: 1 },
+  { 
+    field: 'application_ddl', 
+    headerName: 'DDL', 
+    width: 250, 
+    valueGetter: (value, row) => row.application_ddl ? moment.utc(row.application_ddl).local().format('MM-DD HH:mm'): null,
+    flex: 1,
+  },
+  { 
+    field: 'valid_from', 
+    headerName: 'Valid From', 
+    width: 250, 
+    valueGetter: (value, row) => row.valid_from ? moment.utc(row.valid_from).local().format('YYYY-MM-DD'): null,
+    flex: 1,
+  },
 ];
 
 export default function Apartments({ filterData }) {

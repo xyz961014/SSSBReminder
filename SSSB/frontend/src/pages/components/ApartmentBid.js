@@ -30,7 +30,7 @@ export default function ApartmentBid({ object_number }) {
         setLoading(true);
         const response = await fetchApartmentInfo(object_number);
         if (response.data && response.data.length > 0) {
-            response.data[0].update_time = moment(response.data[0].update_time).format('YYYY-MM-DD HH:mm');
+            response.data[0].update_time = moment.utc(response.data[0].update_time).local().format('YYYY-MM-DD HH:mm');
             setApartmentInfo(response.data[0]);
             // console.log(apartmentInfo)
         }
@@ -59,9 +59,14 @@ export default function ApartmentBid({ object_number }) {
             {apartmentInfo.bid ? apartmentInfo.bid.queue_len : ''} 
           </Typography>
         </Box>
-        <Typography color="text.secondary" sx={{ flex: 1, mt: 2 }}>
+        <Typography color="text.secondary" sx={{ flex: 1, mt: 1 }}>
           Last Update {apartmentInfo.update_time}
         </Typography>
+        <Box sx={{ mt: 1 }}>
+          <Link color="primary" href={apartmentInfo.url} target="_blank" rel="noopener noreferrer">
+            Go to SSSB Page
+          </Link>
+        </Box>
       </LoadingBox>
     </React.Fragment>
   );

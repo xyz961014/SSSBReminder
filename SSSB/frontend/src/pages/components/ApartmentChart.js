@@ -9,22 +9,6 @@ import Title from './Title';
 import LoadingBox from './LoadingBox';
 import { fetchApartmentStatus } from '../../Api'
 
-// Generate Sales Data
-function createData(time, amount) {
-  return { time, amount: amount ?? null };
-}
-
-const data = [
-  createData('00:00', 0),
-  createData('03:05', 300),
-  createData('06:00', 600),
-  createData('09:00', 800),
-  createData('12:00', 1500),
-  createData('15:00', 2000),
-  createData('18:00', 2400),
-  createData('21:00', 2400),
-  createData('24:00'),
-];
 
 export default function ApartmentChart({ object_number }) {
   const theme = useTheme();
@@ -43,7 +27,7 @@ export default function ApartmentChart({ object_number }) {
         if (response.data && response.data.length > 0) {
             response.data.forEach((s) => {
                 if (s.update_time) {
-                  s["time"] = moment(s.update_time).format('MM-DD HH:mm');
+                  s["time"] = moment.utc(s.update_time).local().format('MM-DD HH:mm');
                 }
             });
             setApartmentStatus(response.data);
@@ -66,9 +50,9 @@ export default function ApartmentChart({ object_number }) {
         <LineChart
           dataset={apartmentStatus}
           margin={{
-            top: 16,
-            right: 20,
-            left: 70,
+            top: 40,
+            right: 30,
+            left: 40,
             bottom: 30,
           }}
           xAxis={[
@@ -81,20 +65,25 @@ export default function ApartmentChart({ object_number }) {
           ]}
           yAxis={[
             {
-              label: 'Credit (days)',
               labelStyle: {
                 ...theme.typography.body1,
                 fill: theme.palette.text.primary,
               },
               tickLabelStyle: theme.typography.body2,
               tickNumber: 2,
+              min: 0,
             },
           ]}
           series={[
             {
               dataKey: 'most_credit',
               showMark: false,
-              color: theme.palette.primary.light,
+              label: "Credit Days"
+            },
+            {
+              dataKey: 'queue_len',
+              showMark: false,
+              label: "Queue Length"
             },
           ]}
           sx={{

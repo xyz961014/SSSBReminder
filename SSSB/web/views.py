@@ -10,8 +10,9 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import ReadOnly
-from .models import ApartmentAmount, ApartmentInfo, ApartmentStatus
+from .models import ApartmentAmount, ApartmentInfo, ApartmentStatus, PersonalFilter
 from .serializers import ApartmentAmountSerializer, ApartmentInfoSerializer, ApartmentStatusSerializer
+from .serializers import PersonalFilterSerializer
 
 class ApartmentAmountViewSet(viewsets.ModelViewSet):
     queryset = ApartmentAmount.objects.all()
@@ -31,6 +32,10 @@ class ApartmentStatusViewSet(viewsets.ModelViewSet):
     permission_classes = [ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['object_number']
+
+class PersonalFilterViewSet(viewsets.ModelViewSet):
+    queryset = PersonalFilter.objects.all()
+    serializer_class = PersonalFilterSerializer
 
 class IndexView(TemplateView):
     template_name = 'index.html'
@@ -166,7 +171,7 @@ def get_filtered_apartments(request):
                                if a.bid is None or credit_min < a.bid['most_credit'] < credit_max]
 
     #credits = [a.bid for a in filtered_apartments]
-    #pprint(filtered_apartments[0].valid_from)
+    #pprint(filtered_apartments[0].application_ddl)
 
     serializer = ApartmentInfoSerializer(filtered_apartments, many=True)
     return Response(serializer.data)

@@ -11,6 +11,8 @@ export const fetchCreditRange = () => API.get('get_credit_range');
 
 export const fetchFilteredApartments = (filterDict) => API.post('get_filtered_apartments', filterDict);
 
+export const createFilter = (filterDict) => API.post('api/personal_filter/', filterDict);
+
 export const fetchApartmentInfo = (object_number) => API.get(`api/apartment_info/?object_number=${object_number}`);
 export const fetchApartmentStatus = (object_number) => API.get(`api/apartment_status/?object_number=${object_number}`);
 

@@ -124,6 +124,7 @@ class SSSBWebSpider(object):
          address, 
          accommodation_type, 
          living_space, 
+         floor,
          monthly_rent, 
          valid_from, 
          end_date, 
@@ -136,9 +137,6 @@ class SSSBWebSpider(object):
         status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
         status_item.save()
 
-        info_item.get_current_bid()
-        info_item.get_floor()
-
         if ApartmentInfo.find_one({"object_number": object_number}) is None:
             # add new apartment
             info_item = ApartmentInfo(name=name,
@@ -148,6 +146,7 @@ class SSSBWebSpider(object):
                                       address=address,
                                       accommodation_type=accommodation_type,
                                       living_space=living_space,
+                                      floor=floor,
                                       monthly_rent=monthly_rent,
                                       valid_from=valid_from,
                                       end_date=end_date,
@@ -168,31 +167,9 @@ class SSSBWebSpider(object):
         url_item.crawled = True
         url_item.save()
 
+        info_item.get_floor()
+        info_item.get_current_bid()
         info_item.save()
-
-    #def update_apartment_status(self):
-    #    apartments = ApartmentInfo.find_many({})
-    #    for apartment in tqdm(apartments, desc="Checking apartment status"):
-    #        url = apartment.url
-    #        (name, 
-    #         object_number, 
-    #         housing_area, 
-    #         address, 
-    #         accommodation_type, 
-    #         living_space, 
-    #         monthly_rent, 
-    #         valid_from, 
-    #         end_date, 
-    #         floor_drawing,
-    #         apartment_drawing,
-    #         ddl,
-    #         queue_len,
-    #         most_credit) = self.get_url_info(url)
-
-    #        status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
-    #        status_item.save()
-
-
 
     def get_url_info(self, url):
         #self.browser.execute_script("window.open();")
@@ -258,6 +235,8 @@ class SSSBWebSpider(object):
             living_space = re.sub("[^0-9]", "", living_space)
             living_space = int(living_space)
 
+        floor = attributes["Floor:"] if "Floor:" in attributes.keys() else None
+
         monthly_rent = attributes["Monthly rent:"] if "Monthly rent:" in attributes.keys() else None
         if monthly_rent is not None:
             monthly_rent = re.sub("[^0-9]", "", monthly_rent)
@@ -277,6 +256,7 @@ class SSSBWebSpider(object):
                 address, 
                 accommodation_type, 
                 living_space, 
+                floor,
                 monthly_rent, 
                 valid_from, 
                 end_date, 

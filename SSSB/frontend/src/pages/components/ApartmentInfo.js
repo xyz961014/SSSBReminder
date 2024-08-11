@@ -10,8 +10,9 @@ import { Link } from '@mui/material';
 import { Box, Chip } from '@mui/material';
 import { List, ListItem, ListItemText, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import Title from './Title';
+import moment from 'moment';
 
+import Title from './Title';
 import LoadingBox from './LoadingBox';
 import { fetchApartmentInfo } from '../../Api'
 
@@ -74,12 +75,16 @@ export default function ApartmentInfo({ object_number }) {
   const showItemValue = (item) => {
     var value = apartmentInfo[item.field];
     if (item.field === "application_ddl") {
-      value = new Date(value);
-      value = value.toLocaleString();
+      value = moment.utc(value).local().format('YYYY-MM-DD HH:mm');
     }
     if ((item.field === "end_date" || item.field === "valid_from") && value != null) {
-      value = new Date(value);
-      value = value.toLocaleDateString();
+      value = moment.utc(value).local().format('YYYY-MM-DD');
+    }
+    if (item.field === "monthly_rent") {
+      value = `${value} SEK`;
+    }
+    if (item.field === "living_space") {
+      value = `${value} m²`;
     }
     switch (typeof value) {
       case 'string':
@@ -125,7 +130,7 @@ export default function ApartmentInfo({ object_number }) {
           {columns.map((item, index) => (
             <Grid
               item
-              xs={12} md={6} lg={3}
+              xs={12} md={4} lg={3}
               key={index}
             >
               <ListItem>

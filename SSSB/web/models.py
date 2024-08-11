@@ -1,5 +1,6 @@
+import json
 from bson import ObjectId
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import pytz
 from django.db import models
 from djongo import models as djongo_models
@@ -63,7 +64,10 @@ class StringDateTimeField(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                return datetime.strptime(value, '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.timezone("Europe/Stockholm"))
+                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                stockholm_tz = pytz.timezone("Europe/Stockholm")
+                localized_datetime = stockholm_tz.localize(naive_datetime)
+                return localized_datetime
             except ValueError:
                 raise ValueError("Invalid date format. Expected 'YYYY-MM-DD HH:MM:SS'.")
         return value
@@ -73,7 +77,10 @@ class StringDateTimeField(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                return datetime.strptime(value, '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.timezone("Europe/Stockholm"))
+                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                stockholm_tz = pytz.timezone("Europe/Stockholm")
+                localized_datetime = stockholm_tz.localize(naive_datetime)
+                return localized_datetime
             except ValueError:
                 raise ValueError("Invalid date format. Expected 'YYYY-MM-DD HH:MM:SS'.")
         return value
@@ -86,9 +93,65 @@ class StringDateTimeField(models.DateTimeField):
         return super().get_prep_value(value)
 
 
+class StringDateTimeFieldUTC(models.DateTimeField):
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            try:
+                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                localized_datetime = pytz.utc.localize(naive_datetime)
+                return localized_datetime
+            except ValueError:
+                raise ValueError("Invalid date format. Expected 'YYYY-MM-DD HH:MM:SS'.")
+        return value
+
+    def to_python(self, value):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            try:
+                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                localized_datetime = pytz.utc.localize(naive_datetime)
+                return localized_datetime
+            except ValueError:
+                raise ValueError("Invalid date format. Expected 'YYYY-MM-DD HH:MM:SS'.")
+        return value
+
+    def get_prep_value(self, value):
+        if value is None:
+            return value
+        if isinstance(value, datetime):
+            return value.strftime('%Y-%m-%d %H:%M:%S')
+        return super().get_prep_value(value)
+
+class JSONField(models.JSONField):
+    def from_db_value(self, value, expression, connection):
+        if isinstance(value, str):
+            return json.loads(value)
+        return value
+
+    def to_python(self, value):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except ValueError:
+                raise ValueError("Invalid JSON format.")
+        return value
+
+    def get_prep_value(self, value):
+        if value is None:
+            return value
+        if isinstance(value, dict) or isinstance(value, list):
+            return value
+        return super().get_prep_value(value)
+
+
 class ApartmentAmount(models.Model):
     _id = ObjectIdField(primary_key=True, default=None)
-    update_time = StringDateTimeField(null=True, blank=True, default=None)
+    update_time = StringDateTimeFieldUTC(null=True, blank=True, default=None)
     amount = models.IntegerField(null=True, blank=True, default=None)
 
     class Meta:
@@ -148,7 +211,7 @@ class Distances(models.Model):
 
 class ApartmentInfo(models.Model):
     _id = ObjectIdField(primary_key=True, default=None)
-    update_time = StringDateTimeField(null=True, blank=True, default=None)
+    update_time = StringDateTimeFieldUTC(null=True, blank=True, auto_now=True)
     name = models.CharField(max_length=255, null=True, blank=True, default=None)
     object_number = models.CharField(max_length=255, null=True, blank=True, default=None)
     url = models.URLField(null=True, blank=True, default=None)
@@ -190,7 +253,7 @@ class ApartmentInfo(models.Model):
 
 class ApartmentStatus(models.Model):
     _id = ObjectIdField(primary_key=True, default=None)
-    update_time = StringDateTimeField(null=True, blank=True, default=None)
+    update_time = StringDateTimeFieldUTC(null=True, blank=True, default=None)
     object_number = models.CharField(max_length=255, null=True, blank=True, default=None)
     queue_len = models.IntegerField(null=True, blank=True, default=None)
     most_credit = models.IntegerField(null=True, blank=True, default=None)
@@ -202,6 +265,46 @@ class ApartmentStatus(models.Model):
     def save(self, *args, **kwargs):
         if self._id is None:
             self._id = ObjectId()
+        super().save(*args, **kwargs)
+
+
+class PersonalFilter(models.Model):
+    _id = ObjectIdField(primary_key=True, default=None)
+    update_time = StringDateTimeFieldUTC(null=True, blank=True, default=None)
+
+    email = models.EmailField(max_length=255)
+    regions = JSONField(null=True, blank=True, default=None)
+    types = JSONField(null=True, blank=True, default=None)
+    
+    # [min, max] fields
+    living_space = JSONField(null=True, blank=True, default=None)
+    rent = JSONField(null=True, blank=True, default=None)
+    floor = JSONField(null=True, blank=True, default=None)
+
+    short_rent = models.BooleanField(null=True, blank=True, default=False) 
+    electricity_include = models.BooleanField(null=True, blank=True, default=False)
+    rent_free_june_and_july = models.BooleanField(null=True, blank=True, default=False)
+    max_4_years = models.BooleanField(null=True, blank=True, default=False)
+    current_credit = models.FloatField(default=1e5) 
+    credit_start = models.DateTimeField(null=True, blank=True, default=None)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        managed = True
+        db_table = 'personal_filter'
+
+    def get_credit_start(cls, credit):
+        credit = int(credit)
+        sweden_timezone = pytz.timezone('Europe/Stockholm')
+        now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
+        start_time = now_time - timedelta(days=credit)
+        return start_time.strftime("%Y-%m-%d")
+
+    def save(self, *args, **kwargs):
+        if self._id is None:
+            self._id = ObjectId()
+        if self.credit_start is None:
+            self.credit_start = self.get_credit_start(self.current_credit)
         super().save(*args, **kwargs)
 
 

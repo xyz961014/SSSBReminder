@@ -15,12 +15,16 @@ import Slider from '@mui/material/Slider';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import Switch from '@mui/material/Switch';
+import AlarmIcon from '@mui/icons-material/Alarm';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 
 import LoadingBox from './LoadingBox';
 import LocalDatePicker from './LocalDatePicker';
-import { fetchRegions, fetchTypes, fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
+import { fetchRegions, fetchTypes } from '../../Api'
+import { fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
+import { createFilter } from '../../Api'
 
 const FormGrid = styled(Grid)(() => ({
   display: 'flex',
@@ -71,6 +75,13 @@ export default function Filter({ onFilterChange }) {
   const [summerFree, setSummerFree] = useState("");
   const [max4Years, setMax4Years] = useState("");
   const [shortRent, setShortRent] = useState("");
+
+  // for reminder
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [credit, setCredit] = useState("");
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -172,6 +183,42 @@ export default function Filter({ onFilterChange }) {
       target: { value },
     } = event;
     setSelectedType(value);
+  };
+
+  const handleCreateReminder = async () => {
+    try {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setError(!emailRegex.test(email));
+      if (!error) {
+        const filterDict = {
+          "email": email,
+          "regions": selectedRegion,
+          "types": selectedType,
+          "living_space": {
+            "min": spaceRange[0],
+            "max": spaceRange[1],
+          },
+          "rent": {
+            "min": rentRange[0],
+            "max": rentRange[1],
+          },
+          "floor": {
+            "min": floorRange[0],
+            "max": floorRange[1],
+          },
+          "short_rent": shortRent !== "" ? shortRent: null,
+          "electricity_include": electricityIncluded !== "" ? electricityIncluded : null,
+          "rent_free_june_and_july": summerFree !== "" ? summerFree : null,
+          "max_4_years": max4Years !== "" ? max4Years : null,
+          "current_credit": credit,
+        };
+        console.log(filterDict)
+        const response = await createFilter(filterDict);
+        setDialogOpen(false);
+      }
+    } catch (error) {
+        console.error('failed', error);
+    }
   };
 
   return (
@@ -454,8 +501,60 @@ export default function Filter({ onFilterChange }) {
           />
         </FormGrid>
 
+        <FormGrid item xs={12}>
+          <Box sx={{ display: 'flex', mb: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<AlarmIcon />}
+              onClick={() => setDialogOpen(true)}
+            >
+              Create Reminder
+            </Button>
+          </Box>
+        </FormGrid>
+
       </Grid>
       </LoadingBox>
+
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
+          <DialogTitle>Create Reminder</DialogTitle>
+          <DialogContent>
+              <DialogContentText>
+                Please enter your email address
+              </DialogContentText>
+              <TextField
+                  autoFocus
+                  margin="dense"
+                  label="Email address"
+                  type="email"
+                  fullWidth
+                  value={email}
+                  error={error}
+                  helperText={error ? "Please enter a valid email" : ""}
+                  onChange={(e) => setEmail(e.target.value)}
+              />
+              <DialogContentText>
+                Please enter your current credit days
+              </DialogContentText>
+              <TextField
+                  margin="dense"
+                  label="Credit days"
+                  type="number"
+                  fullWidth
+                  value={credit}
+                  onChange={(e) => setCredit(e.target.value)}
+              />
+          </DialogContent>
+          <DialogActions>
+              <Button onClick={() => setDialogOpen(false)} color="error">
+                  Cancel
+              </Button>
+              <Button onClick={handleCreateReminder} color="primary">
+                  Confirm
+              </Button>
+          </DialogActions>
+      </Dialog>
+
     </React.Fragment>
   );
 }
