@@ -1,11 +1,9 @@
+import os
 import smtplib
 import email
 import json
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from email.mime.image import MIMEImage
-# from email.mime.base import MIMEBase
-# from email.mime.application import MIMEApplication
 from email.header import Header
 from email.utils import formataddr
 import argparse
@@ -14,35 +12,34 @@ import ipdb
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mail_to", type=str, nargs="+", required=True,
-                        help="receiver email address")
+                        help="Receiver email address")
     parser.add_argument("--title", type=str, default="SSSB Update!",
-                        help="mail title")
+                        help="Mail title")
     parser.add_argument("--content", type=str, default="SSSB Update content!",
-                        help="mail content")
+                        help="Mail content")
 
     args = parser.parse_args()
     return args
 
 
-
-
-# username，通过控制台创建的发信地址
-username = 'sssb@mail.thufootball.tech'
-# password，通过控制台创建的SMTP密码
-password = 'SSSBTHUfootball2022'
-# 自定义的回信地址，与控制台设置的无关。邮件推送发信地址不收信，收信人回信时会自动跳转到设置好的回信地址。
-replyto = 'sssb@mail.thufootball.tech'
+# Username, email address created via the console
+username = os.environ["MAIL_USERNAME"]
+# Password, SMTP password created via the console
+password = os.environ["MAIL_PASSWORD"]
+# Custom reply-to address, unrelated to the console settings. 
+# The email sender address does not receive mail, and any replies will be redirected to this reply-to address.
+mail_from = os.environ["MAIL_FROM"]
+#replyto = None
 
 
 def main(args):
-    # 显示的To收信地址
+    # Displayed To recipient address
     rcptto = args.mail_to
-    # 显示的Cc收信地址
+    # Displayed Cc recipient address
     rcptcc = []
-    # Bcc收信地址，密送人不会显示在邮件上，但可以收到邮件
+    # Bcc recipient address, Bcc recipients will not be displayed on the email but will receive the email
     rcptbcc = []
-    # 全部收信地址，包含抄送地址，单次发送不能超过60人
-    #receivers = rcptto + rcptcc + rcptbcc
+    # All recipient addresses, including Cc addresses. No more than 60 recipients in a single send.
     receivers = rcptto
 
     msg = build_message(rcptto, args.title, args.content, 
@@ -51,27 +48,28 @@ def main(args):
 
 def build_message(rcptto, title, content, rcptcc=[], rcptbcc=[]):
     
-    # 构建alternative结构
+    # Construct an alternative structure
     msg = MIMEMultipart('alternative')
     msg['Subject'] = Header(title)
-    msg['From'] = formataddr(["SSSB Reminder", username])  # 昵称+发信地址(或代发)
-    # list转为字符串
+    msg['From'] = formataddr(["SSSB Reminder", mail_from])  # Nickname + sender address (or alias)
+    # Convert list to string
     msg['To'] = ",".join(rcptto)
     msg['Cc'] = ",".join(rcptcc)
-    msg['Reply-to'] = replyto
+    #msg['Reply-to'] = replyto
     msg['Message-id'] = email.utils.make_msgid()
     msg['Date'] = email.utils.formatdate()
     
-    # 若需要开启邮件跟踪服务，请使用以下代码设置跟踪链接头。
-    # 首先域名需要备案，设置且已正确解析了CNAME配置；其次发信需要打Tag，此Tag在控制台已创建并存在，Tag创建10分钟后方可使用；
-    # 设置跟踪链接头
+    # If you need to enable email tracking services, please use the following code to set the tracking link header.
+    # First, the domain needs to be registered, and the correct CNAME configuration must be set; second, you need to tag the email, 
+    # this tag has been created and exists on the console. The tag can be used 10 minutes after creation.
+    # Set tracking link header
     # tagName = 'xxxxxxx'
     #
-    # # OpenTrace对应值是字符串1，固定
+    # # OpenTrace corresponds to the string '1', fixed
     # trace = {
-    #     "OpenTrace": '1',  #打开邮件跟踪
-    #     "LinkTrace": '1',  #点击邮件里的URL跟踪
-    #     "TagName": tagName  # 控制台创建的标签tagname
+    #     "OpenTrace": '1',  # Enable email open tracking
+    #     "LinkTrace": '1',  # Track clicks on URLs within the email
+    #     "TagName": tagName  # Tag name created on the console
     # }
     # jsonTrace = json.dumps(trace)
     # base64Trace = str(base64.b64encode(jsonTrace.encode('utf-8')), 'utf-8')
@@ -79,54 +77,53 @@ def build_message(rcptto, title, content, rcptcc=[], rcptbcc=[]):
     # msg.add_header("X-AliDM-Trace", base64Trace)
     
     
-    # 构建alternative的text/plain部分
-    # textplain = MIMEText('自定义TEXT纯文本部分', _subtype='plain', _charset='UTF-8')
+    # Construct the text/plain part of the alternative
+    # textplain = MIMEText('Custom TEXT plain text part', _subtype='plain', _charset='UTF-8')
     # msg.attach(textplain)
     
-    # 构建alternative的text/html部分
+    # Construct the text/html part of the alternative
     texthtml = MIMEText(content, _subtype='html', _charset='UTF-8')
     msg.attach(texthtml)
     
-    #附件
+    # Attachments
     # files = [r'C:\Users\Downloads\test1.jpg', r'C:\Users\Downloads\test2.jpg']
     # for t in files:
-    #     part_attach1 = MIMEApplication(open(t, 'rb').read())  # 打开附件
-    #     part_attach1.add_header('Content-Disposition', 'attachment', filename=t.rsplit('\\', 1)[1])  # 为附件命名
-    #     msg.attach(part_attach1)  # 添加附件
+    #     part_attach1 = MIMEApplication(open(t, 'rb').read())  # Open attachment
+    #     part_attach1.add_header('Content-Disposition', 'attachment', filename=t.rsplit('\\', 1)[1])  # Name the attachment
+    #     msg.attach(part_attach1)  # Add attachment
 
     return msg
 
 
 def send_mail(receivers, msg):
     try:
-        # 若需要加密使用SSL，可以这样创建client
-        # client = smtplib.SMTP_SSL('smtpdm.aliyun.com', 465)
-        # SMTP普通端口为25或80
-        client = smtplib.SMTP('smtpdm.aliyun.com', 80)
-        # 开启DEBUG模式
+        # If you need to use SSL for encryption, you can create a client like this
+        client = smtplib.SMTP('smtp.eu.mailgun.org', 587)
+        # Enable DEBUG mode
         client.set_debuglevel(0)
-        # 发件人和认证地址必须一致
+        # The sender and authentication address must match
         client.login(username, password)
-        # 备注：若想取到DATA命令返回值,可参考smtplib的sendmail封装方法:
-        # 使用SMTP.mail/SMTP.rcpt/SMTP.data方法
+        # Note: If you want to get the return value of the DATA command, 
+        # you can refer to the sendmail method of smtplib:
+        # Use SMTP.mail/SMTP.rcpt/SMTP.data methods
         # print(receivers)
-        client.sendmail(username, receivers, msg.as_string())  # 支持多个收件人，最多60个
+        client.sendmail(username, receivers, msg.as_string())  # Supports multiple recipients, up to 60
         client.quit()
-        print('邮件发送成功！')
+        print('Email sent successfully!')
     except smtplib.SMTPConnectError as e:
-        print('邮件发送失败，连接失败:', e.smtp_code, e.smtp_error)
+        print('Email sending failed, connection failed:', e.smtp_code, e.smtp_error)
     except smtplib.SMTPAuthenticationError as e:
-        print('邮件发送失败，认证错误:', e.smtp_code, e.smtp_error)
+        print('Email sending failed, authentication error:', e.smtp_code, e.smtp_error)
     except smtplib.SMTPSenderRefused as e:
-        print('邮件发送失败，发件人被拒绝:', e.smtp_code, e.smtp_error)
+        print('Email sending failed, sender refused:', e.smtp_code, e.smtp_error)
     except smtplib.SMTPRecipientsRefused as e:
-        print('邮件发送失败，收件人被拒绝:', e.smtp_code, e.smtp_error)
+        print('Email sending failed, recipient refused:', e.smtp_code, e.smtp_error)
     except smtplib.SMTPDataError as e:
-        print('邮件发送失败，数据接收拒绝:', e.smtp_code, e.smtp_error)
+        print('Email sending failed, data reception refused:', e.smtp_code, e.smtp_error)
     except smtplib.SMTPException as e:
-        print('邮件发送失败, ', str(e))
+        print('Email sending failed,', str(e))
     except Exception as e:
-        print('邮件发送异常, ', str(e))
+        print('Email sending exception,', str(e))
 
 
 if __name__ == "__main__":

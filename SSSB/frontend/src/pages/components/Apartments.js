@@ -100,10 +100,10 @@ export default function Apartments({ filterData }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log(filterData);
+        // console.log(filterData);
         const response = await fetchFilteredApartments(filterData);
         setRows(response.data);
-        //console.log(rows);
+        // console.log(rows);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {

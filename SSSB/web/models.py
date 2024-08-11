@@ -5,6 +5,14 @@ import pytz
 from django.db import models
 from djongo import models as djongo_models
 
+import sys
+from pathlib import Path
+app_dir = Path(__file__).parent.parent.parent
+sys.path.append(app_dir.as_posix())
+
+from send_mail import send_mail, build_message
+from jinja2 import Environment, FileSystemLoader
+
 # Create your models here.
 
 class ObjectIdField(models.CharField):
@@ -270,7 +278,7 @@ class ApartmentStatus(models.Model):
 
 class PersonalFilter(models.Model):
     _id = ObjectIdField(primary_key=True, default=None)
-    update_time = StringDateTimeFieldUTC(null=True, blank=True, default=None)
+    update_time = StringDateTimeFieldUTC(null=True, blank=True, auto_now=True)
 
     email = models.EmailField(max_length=255)
     regions = JSONField(null=True, blank=True, default=None)
@@ -286,25 +294,38 @@ class PersonalFilter(models.Model):
     rent_free_june_and_july = models.BooleanField(null=True, blank=True, default=False)
     max_4_years = models.BooleanField(null=True, blank=True, default=False)
     current_credit = models.FloatField(default=1e5) 
-    credit_start = models.DateTimeField(null=True, blank=True, default=None)
+    credit_start = StringDateField(null=True, blank=True, default=None)
     active = models.BooleanField(default=True)
 
     class Meta:
         managed = True
         db_table = 'personal_filter'
 
-    def get_credit_start(cls, credit):
+    def get_credit_start(self, credit):
         credit = int(credit)
         sweden_timezone = pytz.timezone('Europe/Stockholm')
         now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
         start_time = now_time - timedelta(days=credit)
-        return start_time.strftime("%Y-%m-%d")
+        return start_time
+
+    def send_init_mail(self):
+        receivers = [self.email]
+        link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+
+        curr_path = Path(__file__).resolve().parent
+        env = Environment(loader=FileSystemLoader(app_dir / 'SSSB/templates'))
+        template = env.get_template('initial_mail.html')  
+        msg = build_message(receivers, 
+                            title="SSSB Filter built",
+                            content=template.render(link=link))
+        send_mail(receivers, msg)
 
     def save(self, *args, **kwargs):
-        if self._id is None:
-            self._id = ObjectId()
         if self.credit_start is None:
             self.credit_start = self.get_credit_start(self.current_credit)
+        if self._id is None:
+            self._id = ObjectId()
+            self.send_init_mail()
         super().save(*args, **kwargs)
 
 

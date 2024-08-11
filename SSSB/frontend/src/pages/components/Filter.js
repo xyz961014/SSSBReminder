@@ -21,7 +21,9 @@ import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 
 import LoadingBox from './LoadingBox';
+import Descriptions from './Descriptions';
 import LocalDatePicker from './LocalDatePicker';
+import SuccessSnackbar from './SimpleSnackbar';
 import { fetchRegions, fetchTypes } from '../../Api'
 import { fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
 import { createFilter } from '../../Api'
@@ -78,9 +80,11 @@ export default function Filter({ onFilterChange }) {
 
   // for reminder
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogLoading, setDialogLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(false);
   const [credit, setCredit] = useState("");
+  const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
 
 
   useEffect(() => {
@@ -109,23 +113,23 @@ export default function Filter({ onFilterChange }) {
         setTypes(types);
   
         const spaceRange = [spaceRangeResponse.data.min || 0, spaceRangeResponse.data.max || 100];
-        setSpaceMin(spaceRangeResponse.data.min || 0);
-        setSpaceMax(spaceRangeResponse.data.max || 100);
+        setSpaceMin(Math.min(spaceRangeResponse.data.min, 0));
+        setSpaceMax(Math.max(spaceRangeResponse.data.max, 150));
         setSpaceRange(spaceRange);
   
         const rentRange = [rentRangeResponse.data.min || 0, rentRangeResponse.data.max || 10000];
-        // setRentMin(rentRangeResponse.data.min || 0);
-        setRentMax(rentRangeResponse.data.max || 10000);
+        setRentMin(Math.min(rentRangeResponse.data.min,0));
+        setRentMax(Math.max(rentRangeResponse.data.max, 25000));
         setRentRange(rentRange);
   
         const floorRange = [floorRangeResponse.data.min || 0, floorRangeResponse.data.max || 10];
-        setFloorMin(floorRangeResponse.data.min || 0);
-        setFloorMax(floorRangeResponse.data.max || 10);
+        setFloorMin(Math.min(floorRangeResponse.data.min, 0));
+        setFloorMax(Math.max(floorRangeResponse.data.max, 30));
         setFloorRange(floorRange);
   
         const creditRange = [creditRangeResponse.data.min || 0, creditRangeResponse.data.max || 1000];
-        // setCreditMin(creditRangeResponse.data.min || 0);
-        setCreditMax(creditRangeResponse.data.max || 1000);
+        setCreditMin(Math.min(creditRangeResponse.data.min, 0));
+        setCreditMax(Math.max(creditRangeResponse.data.max, 4000));
         setCreditRange(creditRange);
   
       } catch (err) {
@@ -212,9 +216,15 @@ export default function Filter({ onFilterChange }) {
           "max_4_years": max4Years !== "" ? max4Years : null,
           "current_credit": credit,
         };
-        console.log(filterDict)
+        // console.log(filterDict)
+        setDialogLoading(true);
         const response = await createFilter(filterDict);
+        setDialogLoading(false);
         setDialogOpen(false);
+        setSuccessSnackbarOpen(true);
+        setTimeout(() => {
+          setSuccessSnackbarOpen(false);
+        }, 6000);
       }
     } catch (error) {
         console.error('failed', error);
@@ -335,7 +345,7 @@ export default function Filter({ onFilterChange }) {
 
         <FormGrid item xs={12}>
           <FormLabel htmlFor="rent">
-            Rent (SEK)
+            Monthly Rent (SEK)
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <Slider
@@ -517,6 +527,7 @@ export default function Filter({ onFilterChange }) {
       </LoadingBox>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
+        <LoadingBox loading={dialogLoading}>
           <DialogTitle>Create Reminder</DialogTitle>
           <DialogContent>
               <DialogContentText>
@@ -544,6 +555,56 @@ export default function Filter({ onFilterChange }) {
                   value={credit}
                   onChange={(e) => setCredit(e.target.value)}
               />
+              <DialogContentText>
+                Your personal filter
+              </DialogContentText>
+              <Box sx={{ mt: 1 }}>
+                <Descriptions 
+                  items={[
+                    {
+                      "label": "Region",
+                      "value": selectedRegion.length > 0 ? selectedRegion.join(", ") : "Not Specified",
+                    },
+                    {
+                      "label": "Accomodation Type",
+                      "value": selectedType.length > 0 ? selectedType.join(", ") : "Not Specified",
+                    },
+                    {
+                      "label": "Living Space",
+                      "value": `${spaceRange[0]} m² ~ ${spaceRange[1]} m²`,
+                    },
+                    {
+                      "label": "Monthly Rent",
+                      "value": `${rentRange[0]} SEK ~ ${rentRange[1]} SEK`,
+                    },
+                    {
+                      "label": "Floor",
+                      "value": `${floorRange[0]} ~ ${floorRange[1]}`,
+                    },
+                    {
+                      "label": "Current Credit Days",
+                      "value": credit ? `${credit} days`: "Not Specified",
+                    },
+                    {
+                      "label": "Electricity Included",
+                      "value": electricityIncluded === "" ? `Not Specified`: (electricityIncluded === "true" ? "Yes": "No"),
+                    },
+                    {
+                      "label": "June & July Free",
+                      "value": summerFree === "" ? `Not Specified`: (summerFree === "true" ? "Yes": "No"),
+                    },
+                    {
+                      "label": "Max 4 Years",
+                      "value": max4Years === "" ? `Not Specified`: (max4Years === "true" ? "Yes": "No"),
+                    },
+                    {
+                      "label": "Short Rent",
+                      "value": shortRent === "" ? `Not Specified`: (shortRent === "true" ? "Yes": "No"),
+                    },
+                  ]} 
+                  column={3} 
+                />
+              </Box>
           </DialogContent>
           <DialogActions>
               <Button onClick={() => setDialogOpen(false)} color="error">
@@ -553,7 +614,14 @@ export default function Filter({ onFilterChange }) {
                   Confirm
               </Button>
           </DialogActions>
+        </LoadingBox>
       </Dialog>
+
+      <SuccessSnackbar 
+        open={successSnackbarOpen}
+        message="Filter created successfully. Please check your email for details."
+      />
+
 
     </React.Fragment>
   );
