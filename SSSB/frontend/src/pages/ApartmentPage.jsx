@@ -11,9 +11,9 @@ import { useLocation } from 'react-router-dom';
 import ApartmentChart from './components/ApartmentChart';
 import ApartmentBid from './components/ApartmentBid';
 import ApartmentInfo from './components/ApartmentInfo';
+import ApartmentMap from './components/ApartmentMap';
 
 import { fetchApartmentInfo } from '../Api'
-
 const ApartmentPage = () => {
   const [apartmentInfo, setApartmentInfo] = useState({});
 
@@ -82,6 +82,11 @@ const ApartmentPage = () => {
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                   <ApartmentInfo object_number={objectNumber} />
+                </Paper>
+              </Grid>
+              <Grid item xs={12}>
+                <Paper sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
+                  <ApartmentMap object_number={objectNumber} />
                 </Paper>
               </Grid>
             </Grid>
