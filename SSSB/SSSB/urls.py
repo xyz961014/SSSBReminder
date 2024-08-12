@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
+from django.conf.urls.static import static
+from django.views.static import serve
+#from .settings import MANIFEST_DIR
 
 #router = DefaultRouter()
 #router.register(r'mymodel', MyModelViewSet)
@@ -33,3 +36,9 @@ urlpatterns = [
     # RESTful API
     path('', include('web.urls')),
 ]
+
+#for f in MANIFEST_DIR.iterdir():
+#    if not f.is_dir():
+#        urlpatterns.append(
+#            path(f.name, serve, {'document_root': MANIFEST_DIR, 'path': f.name}),
+#        )
