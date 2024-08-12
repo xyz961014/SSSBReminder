@@ -69,7 +69,7 @@ services:
   mongo:
     image: mongo:5
     ports:
-      - "27018:27017"
+      - "1027:27017"
     volumes:
       - ./db:/data/db
 

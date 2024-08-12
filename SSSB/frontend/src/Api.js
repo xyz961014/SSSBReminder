@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const baseURL = "http://localhost:8082/";
+export const baseURL = "http://sssbreminder.xyzs.app/";
 const API = axios.create({ baseURL: baseURL });
 
 export const fetchRegions = () => API.get('get_regions');
