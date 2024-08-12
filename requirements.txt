@@ -38,6 +38,7 @@ Pygments==2.18.0
 pymongo==3.12.1
 pyOpenSSL==24.2.1
 PySocks==1.7.1
+python-decouple==3.8
 pytz==2024.1
 requests==2.32.3
 selenium==4.2.0
