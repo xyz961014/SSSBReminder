@@ -20,10 +20,10 @@ services:
       - .env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.logtgpt-web.rule=Host(`sssbreminder.xyzs.app`)"
-      - "traefik.http.services.logtgpt-web.loadbalancer.server.port=8082"
-      - "traefik.http.routers.logtgpt-web.entrypoints=web,websecure"
-      - "traefik.http.routers.logtgpt-web.tls.certresolver=sslresolver"
+      - "traefik.http.routers.sssbreminder-web.rule=Host(`sssbreminder.xyzs.app`)"
+      - "traefik.http.services.sssbreminder-web.loadbalancer.server.port=8082"
+      - "traefik.http.routers.sssbreminder-web.entrypoints=web,websecure"
+      - "traefik.http.routers.sssbreminder-web.tls.certresolver=sslresolver"
     networks:
       - traefik
 
