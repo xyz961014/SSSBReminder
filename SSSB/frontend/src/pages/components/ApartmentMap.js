@@ -40,7 +40,7 @@ export default function ApartmentMap({ object_number }) {
             if (map_response.data && map_response.data.results && map_response.data.results.length > 0) {
               var res = map_response.data.results[0];
               if (res.geometry && res.geometry.location && res.geometry.location.lat && res.geometry.location.lng) {
-                console.log(res.geometry.location);
+                // console.log(res.geometry.location);
                 setCenter({ lat: res.geometry.location.lat, lng: res.geometry.location.lng });
               }
             } 

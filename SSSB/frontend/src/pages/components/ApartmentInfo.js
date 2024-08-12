@@ -17,53 +17,53 @@ import LoadingBox from './LoadingBox';
 import { fetchApartmentInfo } from '../../Api'
 
 const columns = [
+  // {
+  //   "field": "accommodation_type",
+  //   "name": "Accommodation Type",
+  // },
   {
-    "field": "accommodation_type",
-    "name": "Accommodation Type",
+    "field": "housing_area",
+    "name": "Housing Area",
   },
   {
     "field": "address",
     "name": "Address",
   },
   {
+    "field": "floor",
+    "name": "Floor",
+  },
+  {
     "field": "application_ddl",
     "name": "Application DDL",
   },
   {
-    "field": "electricity_include",
-    "name": "Electricity Include",
+    "field": "valid_from",
+    "name": "Valid From",
   },
   {
     "field": "end_date",
     "name": "End Date",
   },
   {
-    "field": "floor",
-    "name": "Floor",
+    "field": "electricity_include",
+    "name": "Electricity Include",
   },
-  {
-    "field": "housing_area",
-    "name": "Housing Area",
-  },
-  {
-    "field": "living_space",
-    "name": "Living Space",
-  },
+  // {
+  //   "field": "living_space",
+  //   "name": "Living Space",
+  // },
   {
     "field": "max_4_years",
     "name": "Max 4 Years",
   },
-  {
-    "field": "monthly_rent",
-    "name": "Monthly Rent",
-  },
+  // {
+  //   "field": "monthly_rent",
+  //   "name": "Monthly Rent",
+  // },
   {
     "field": "rent_free_june_and_july",
     "name": "Rent Free June and July",
-  },
-  {
-    "field": "valid_from",
-    "name": "Valid From",
   },
 ];
 
@@ -130,7 +130,7 @@ export default function ApartmentInfo({ object_number }) {
           {columns.map((item, index) => (
             <Grid
               item
-              xs={12} md={4} lg={3}
+              xs={12} md={6} lg={4}
               key={index}
             >
               <ListItem>

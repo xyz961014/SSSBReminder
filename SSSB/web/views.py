@@ -9,10 +9,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
+from django.http import FileResponse, Http404
 from .permissions import ReadOnly
 from .models import ApartmentAmount, ApartmentInfo, ApartmentStatus, PersonalFilter
 from .serializers import ApartmentAmountSerializer, ApartmentInfoSerializer, ApartmentStatusSerializer
 from .serializers import PersonalFilterSerializer
+
+from pathlib import Path
+app_dir = Path(__file__).parent.parent.parent
 
 class ApartmentAmountViewSet(viewsets.ModelViewSet):
     queryset = ApartmentAmount.objects.all()
@@ -176,20 +180,38 @@ def get_filtered_apartments(request):
     serializer = ApartmentInfoSerializer(filtered_apartments, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def get_bid_history(request):
-    object_number = None
-    if "object_number" in request.data.keys():
-        object_number = request.data["object_number"]
-    
-    credits = [apartment.bid["most_credit"] for apartment in apartments if apartment.bid is not None]
-    
-    if not credits:
-        return Response({'min': None, 'max': None})
+#@api_view(['GET'])
+#def get_bid_history(request):
+#    object_number = None
+#    if "object_number" in request.data.keys():
+#        object_number = request.data["object_number"]
+#    
+#    credits = [apartment.bid["most_credit"] for apartment in apartments if apartment.bid is not None]
+#    
+#    if not credits:
+#        return Response({'min': None, 'max': None})
+#
+#    min_credit = min(credits)
+#    max_credit = max(credits)
+#    
+#    return Response({'min': min_credit, 'max': max_credit})
 
-    min_credit = min(credits)
-    max_credit = max(credits)
-    
-    return Response({'min': min_credit, 'max': max_credit})
+@api_view(['GET'])
+def get_drawing(request):
+    object_number = None
+    drawing_type = "APARTMENT"
+    if "object_number" in request.GET:
+        object_number = request.GET["object_number"]
+    if "drawing_type" in request.GET:
+        drawing_type = request.GET["drawing_type"]
+
+    file_path = app_dir / "resources" / f"{object_number}_{drawing_type} DRAWING.pdf"
+
+    print(file_path, file_path.exists())
+
+    if not file_path.exists():
+        raise Http404("File not found")
+
+    return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
 
 

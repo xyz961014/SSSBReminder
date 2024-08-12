@@ -10,10 +10,17 @@ import { useLocation } from 'react-router-dom';
 
 import ApartmentChart from './components/ApartmentChart';
 import ApartmentBid from './components/ApartmentBid';
+import ApartmentKeyInfo from './components/ApartmentKeyInfo';
 import ApartmentInfo from './components/ApartmentInfo';
 import ApartmentMap from './components/ApartmentMap';
+import PDFViewer from './components/PDFViewer';
 
-import { fetchApartmentInfo } from '../Api'
+import { fetchApartmentInfo, baseURL } from '../Api'
+
+const getApartmentPdfUrl = (objectNumber, drawingType) => {
+    return `${baseURL}get_drawing?object_number=${objectNumber}&drawing_type=${drawingType}`;
+}
+
 const ApartmentPage = () => {
   const [apartmentInfo, setApartmentInfo] = useState({});
 
@@ -79,14 +86,29 @@ const ApartmentPage = () => {
                   <ApartmentBid object_number={objectNumber} />
                 </Paper>
               </Grid>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+              <Grid item xs={12} md={4} lg={3}>
+                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <ApartmentKeyInfo object_number={objectNumber} />
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={8} lg={9}>
+                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
                   <ApartmentInfo object_number={objectNumber} />
                 </Paper>
               </Grid>
               <Grid item xs={12}>
                 <Paper sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
                   <ApartmentMap object_number={objectNumber} />
+                </Paper>
+              </Grid>
+              <Grid item md={6} xs={12}>
+                <Paper sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
+                  <PDFViewer pdfUrl={getApartmentPdfUrl(objectNumber, "APARTMENT")} title="Apartment Drawing" />
+                </Paper>
+              </Grid>
+              <Grid item md={6} xs={12}>
+                <Paper sx={{ pt: 0, display: 'flex', flexDirection: 'column' }}>
+                  <PDFViewer pdfUrl={getApartmentPdfUrl(objectNumber, "FLOOR")} title="Floor Drawing" />
                 </Paper>
               </Grid>
             </Grid>
