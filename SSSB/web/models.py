@@ -226,7 +226,7 @@ class ApartmentInfo(models.Model):
     housing_area = models.CharField(max_length=255, null=True, blank=True, default=None)
     address = models.CharField(max_length=255, null=True, blank=True, default=None)
     accommodation_type = models.CharField(max_length=255, null=True, blank=True, default=None)
-    floor = models.IntegerField(null=True, blank=True, default=None)
+    #floor = models.IntegerField(null=True, blank=True, default=None)
     living_space = models.IntegerField(null=True, blank=True, default=None)
     monthly_rent = models.IntegerField(null=True, blank=True, default=None)
     valid_from = StringDateField(null=True, blank=True, default=None)

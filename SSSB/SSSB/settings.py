@@ -134,7 +134,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
     BASE_DIR / 'frontend/build/static',
 ]
-#MANIFEST_DIR = BASE_DIR / 'frontend/build'
+MANIFEST_DIR = BASE_DIR / 'frontend/build'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

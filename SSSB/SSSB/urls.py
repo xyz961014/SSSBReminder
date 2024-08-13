@@ -18,15 +18,18 @@ from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 from django.views.static import serve
-#from .settings import MANIFEST_DIR
+from django.views.generic import TemplateView
+from .settings import MANIFEST_DIR
 
 #router = DefaultRouter()
 #router.register(r'mymodel', MyModelViewSet)
 
 from . import views
+import web.views as web_views
 
 urlpatterns = [
-    path('', views.index),
+   # path('', web_views.IndexView.as_view(), name="index"),
+    path('', TemplateView.as_view(template_name="index.html")),
     path('available_apartments', views.available_apartments),
     path('apartment_status', views.apartment_status),
     path('search_apartments', views.search_apartments),
@@ -37,8 +40,8 @@ urlpatterns = [
     path('', include('web.urls')),
 ]
 
-#for f in MANIFEST_DIR.iterdir():
-#    if not f.is_dir():
-#        urlpatterns.append(
-#            path(f.name, serve, {'document_root': MANIFEST_DIR, 'path': f.name}),
-#        )
+for f in MANIFEST_DIR.iterdir():
+    if not f.is_dir():
+        urlpatterns.append(
+            path(f.name, serve, {'document_root': MANIFEST_DIR, 'path': f.name}),
+        )

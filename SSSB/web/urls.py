@@ -1,5 +1,6 @@
-from django.urls import path, include
+from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
+from django.views.generic import TemplateView
 from .views import ApartmentAmountViewSet, ApartmentInfoViewSet, ApartmentStatusViewSet
 from .views import PersonalFilterViewSet
 from .views import get_regions, get_types
@@ -15,7 +16,6 @@ router.register(r'apartment_status', ApartmentStatusViewSet)
 router.register(r'personal_filter', PersonalFilterViewSet)
 
 urlpatterns = [
-    path('index', IndexView.as_view(), name='index'),
     path('api/', include(router.urls)),
     path('get_regions', get_regions, name='get_regions'),
     path('get_types', get_types, name='get_types'),
