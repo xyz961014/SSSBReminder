@@ -157,66 +157,76 @@ class JSONField(models.JSONField):
         return super().get_prep_value(value)
 
 
-class FloorField(models.IntegerField):
-    def from_db_value(self, value, expression, connection):
-        if value is None:
-            return value
-        if isinstance(value, str):
-            if value.upper() == "SU":
-                return -1
-            elif value.upper() == "GF":
-                return 0
-            else:
-                try:
-                    return int(value)
-                except ValueError:
-                    raise ValueError(f"Invalid floor value {value}. Expected 'SU', 'GF' or an integer.")
-        return value
-
-    def to_python(self, value):
-        if value is None:
-            return value
-        if isinstance(value, str):
-            if value.upper() == "SU":
-                return -1
-            elif value.upper() == "GF":
-                return 0
-            else:
-                try:
-                    return int(value)
-                except ValueError:
-                    raise ValueError(f"Invalid floor value {value}. Expected 'SU', 'GF' or an integer.")
-        return value
-
-    def get_prep_value(self, value):
-        if value is None:
-            return value
-        if isinstance(value, int):
-            if value == -1:
-                return "SU"
-            elif value == 0:
-                return "GF"
-            return str(value)
-        return super().get_prep_value(value)
-
-    def get_db_prep_value(self, value, connection, prepared=False):
-        """
-        This method ensures that the value is correctly prepared for database queries,
-        such as when using `__gte`, `__lte`, etc.
-        """
-        if value is None:
-            return value
-        if isinstance(value, str):
-            if value.upper() == "SU":
-                return -1
-            elif value.upper() == "GF":
-                return 0
-            else:
-                try:
-                    return int(value)
-                except ValueError:
-                    raise ValueError("Invalid floor value. Expected 'SU', 'GF' or an integer.")
-        return value
+#class FloorField(models.IntegerField):
+#    def from_db_value(self, value, expression, connection):
+#        if value is None:
+#            return value
+#        if isinstance(value, str):
+#            if value.upper() == "SU":
+#                return -1
+#            elif value.upper() == "GF":
+#                return 0
+#            else:
+#                try:
+#                    return int(value)
+#                except ValueError:
+#                    raise ValueError(f"Invalid floor value {value}. Expected 'SU', 'GF' or an integer.")
+#        return value
+#
+#    def to_python(self, value):
+#        if value is None:
+#            return value
+#        if isinstance(value, str):
+#            if value.upper() == "SU":
+#                return -1
+#            elif value.upper() == "GF":
+#                return 0
+#            else:
+#                try:
+#                    return int(value)
+#                except ValueError:
+#                    raise ValueError(f"Invalid floor value {value}. Expected 'SU', 'GF' or an integer.")
+#        return value
+#
+#    def get_prep_value(self, value):
+#        if value is None:
+#            return value
+#        if isinstance(value, int):
+#            if value == -1:
+#                return "SU"
+#            elif value == 0:
+#                return "GF"
+#            return str(value)
+#        return super().get_prep_value(value)
+#
+#    def get_db_prep_value(self, value, connection, prepared=False):
+#        """
+#        This method ensures that the value is correctly prepared for database queries,
+#        such as when using `__gte`, `__lte`, etc.
+#        """
+#        if value is None:
+#            return value
+#        if isinstance(value, str):
+#            if value.upper() == "SU":
+#                return -1
+#            elif value.upper() == "GF":
+#                return 0
+#            else:
+#                try:
+#                    return int(value)
+#                except ValueError:
+#                    raise ValueError("Invalid floor value. Expected 'SU', 'GF' or an integer.")
+#        elif isinstance(value, int):
+#            return value
+#        return super().get_db_prep_value(value, connection, prepared)
+#
+#    def get_db_prep_lookup(self, lookup_type, value, connection, prepared=False):
+#        """
+#        Handle lookups such as __gte and __lte.
+#        """
+#        if lookup_type in ['gte', 'lte', 'exact', 'gt', 'lt']:
+#            value = self.get_db_prep_value(value, connection, prepared)
+#        return super().get_db_prep_lookup(lookup_type, value, connection, prepared)
 
 class ApartmentAmount(models.Model):
     _id = ObjectIdField(primary_key=True, default=None)
@@ -287,7 +297,7 @@ class ApartmentInfo(models.Model):
     housing_area = models.CharField(max_length=255, null=True, blank=True, default=None)
     address = models.CharField(max_length=255, null=True, blank=True, default=None)
     accommodation_type = models.CharField(max_length=255, null=True, blank=True, default=None)
-    floor = FloorField(null=True, blank=True, default=None)
+    floor = models.IntegerField(null=True, blank=True, default=None)
     living_space = models.IntegerField(null=True, blank=True, default=None)
     monthly_rent = models.IntegerField(null=True, blank=True, default=None)
     valid_from = StringDateField(null=True, blank=True, default=None)

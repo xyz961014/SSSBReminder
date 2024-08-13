@@ -99,6 +99,8 @@ def get_floor_range(request):
     apartments = ApartmentInfo.objects.all()
     
     floors = [apartment.floor for apartment in apartments if apartment.floor is not None]
+
+    # pprint(floors)
     
     if not floors:
         return Response({'min': None, 'max': None})
