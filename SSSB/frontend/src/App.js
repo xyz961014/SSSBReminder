@@ -14,8 +14,8 @@ const App = () => {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/apartment" element={<ApartmentPage />} />
+          <Route path="/" element={<HomePage />} exact />
+          <Route path="/apartment" element={<ApartmentPage />} exact />
         </Routes>
       </Router>
     </ThemeProvider>
