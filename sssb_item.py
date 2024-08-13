@@ -182,18 +182,21 @@ class ApartmentInfo(SSSBItem):
 
         return bid
 
-    def get_floor(self):
-        if not hasattr(self, "floor") or self.floor is None:
+    def get_floor(self, floor=None):
+        if floor is not None:
+            self.floor = floor
+            self.save()
+        elif not hasattr(self, "floor") or self.floor is None:
             try:
                 parse_address = self.address.split("/")
                 apartment_num = parse_address[-1].strip()
                 floor = int(apartment_num[1])
-                if int(apartment_num[0]) > 1:
-                    floor += 10 * (int(apartment_num[0]) - 1)
+                floor += 10 * (int(apartment_num[0]) - 1)
                 self.floor = floor
                 self.save()
             except:
                 self.floor = None
+                self.save()
         return self.floor
 
     def get_distance(self, place_to, chromedriver_path, options=None):
@@ -311,18 +314,18 @@ class PersonalFilter(SSSBItem):
         self.credit = (now_time - start_date).days
         return self.credit
 
-    def send_initial_mail(self):
-        receivers = [self.email]
-        link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+    # def send_initial_mail(self):
+    #     receivers = [self.email]
+    #     link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
 
-        curr_path = Path(__file__).resolve().parent
-        env = Environment(loader=FileSystemLoader(
-                    os.path.join(curr_path, 'SSSB/SSSB/templates')))
-        template = env.get_template('initial_mail.html')  
-        msg = build_message(receivers, 
-                            title="SSSB Filter built",
-                            content=template.render(link=link))
-        send_mail(receivers, msg)
+    #     curr_path = Path(__file__).resolve().parent
+    #     env = Environment(loader=FileSystemLoader(
+    #                 os.path.join(curr_path, 'SSSB/SSSB/templates')))
+    #     template = env.get_template('initial_mail.html')  
+    #     msg = build_message(receivers, 
+    #                         title="SSSB Filter built",
+    #                         content=template.render(link=link))
+    #     send_mail(receivers, msg)
 
     def unsubscribe(self):
         self.active = False

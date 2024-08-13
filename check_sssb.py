@@ -167,7 +167,7 @@ class SSSBWebSpider(object):
         url_item.crawled = True
         url_item.save()
 
-        info_item.get_floor()
+        info_item.get_floor(floor)
         info_item.get_current_bid()
         info_item.save()
 
