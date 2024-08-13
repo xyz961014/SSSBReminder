@@ -90,7 +90,8 @@ DATABASES = {
         'NAME': 'SSSB',
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
-            'host': 'mongodb://mongo:27017'
+            #'host': 'mongodb://mongo:27017'
+            'host': 'mongodb://localhost:1027'
         }
     }
 }
@@ -150,3 +151,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
 }
+
+REACT_ROUTES = [
+    "apartment",
+]

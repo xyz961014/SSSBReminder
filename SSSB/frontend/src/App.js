@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import HomePage from './pages/HomePage';
@@ -15,7 +15,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route exact path="/" element={<HomePage />} />
-          <Route path="/apartment" element={<ApartmentPage />} />
+          <Route exact path="/apartment" element={<ApartmentPage />} />
         </Routes>
       </Router>
     </ThemeProvider>

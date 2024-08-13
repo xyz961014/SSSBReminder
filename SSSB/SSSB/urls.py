@@ -19,7 +19,7 @@ from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 from django.views.static import serve
 from django.views.generic import TemplateView
-from .settings import MANIFEST_DIR
+from .settings import MANIFEST_DIR, REACT_ROUTES
 
 #router = DefaultRouter()
 #router.register(r'mymodel', MyModelViewSet)
@@ -45,3 +45,7 @@ for f in MANIFEST_DIR.iterdir():
         urlpatterns.append(
             path(f.name, serve, {'document_root': MANIFEST_DIR, 'path': f.name}),
         )
+for route in REACT_ROUTES:
+    urlpatterns.append(
+        path('{}'.format(route), TemplateView.as_view(template_name='index.html'))
+    )
