@@ -90,8 +90,8 @@ DATABASES = {
         'NAME': 'SSSB',
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
-            #'host': 'mongodb://mongo:27017'
-            'host': 'mongodb://localhost:1027'
+            'host': 'mongodb://mongo:27017'
+            #'host': 'mongodb://localhost:1027'
         }
     }
 }
