@@ -183,20 +183,29 @@ class ApartmentInfo(SSSBItem):
         return bid
 
     def get_floor(self, floor=None):
-        if floor is not None:
+        floor = self.floor if floor is None else floor
+        if isinstance(floor, str):
+            if floor.upper() == "SU":
+                self.floor = -1
+            elif floor.upper() == "GF":
+                self.floor = 0
+            else:
+                try:
+                    self.floor = int(floor)
+                except ValueError:
+                    self.floor = None
+        elif isinstance(floor, int):
             self.floor = floor
-            self.save()
-        elif not hasattr(self, "floor") or self.floor is None:
+
+        if self.floor is None:
             try:
                 parse_address = self.address.split("/")
                 apartment_num = parse_address[-1].strip()
                 floor = int(apartment_num[1])
                 floor += 10 * (int(apartment_num[0]) - 1)
                 self.floor = floor
-                self.save()
             except:
                 self.floor = None
-                self.save()
         return self.floor
 
     def get_distance(self, place_to, chromedriver_path, options=None):
@@ -242,6 +251,10 @@ class ApartmentInfo(SSSBItem):
             return self.distances[place_to]
         else:
             return None
+
+    def save(self):
+        self.floor = self.get_floor()
+        super().save()
 
 
 
