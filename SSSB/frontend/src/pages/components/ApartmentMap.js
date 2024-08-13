@@ -4,7 +4,7 @@ import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import axios from 'axios';
 
 import LoadingBox from './LoadingBox';
-import { fetchApartmentInfo } from '../../Api'
+import { fetchApartmentInfo, fetchGeocode } from '../../Api'
 
 
 const containerStyle = {
@@ -34,9 +34,11 @@ export default function ApartmentMap({ object_number }) {
         if (response.data && response.data.length > 0) {
           setApartmentInfo(response.data[0]);
           try {
-            const map_response = await axios.get(
-              `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(response.data[0].address)}&key=${GOOGLE_MAPS_API_KEY}`
-            );
+            //const map_response = await axios.get(
+            //  `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(response.data[0].address)}&key=${GOOGLE_MAPS_API_KEY}`
+            //);
+            const map_response = await fetchGeocode(response.data[0].address);
+            //console.log(map_response.data);
             if (map_response.data && map_response.data.results && map_response.data.results.length > 0) {
               var res = map_response.data.results[0];
               if (res.geometry && res.geometry.location && res.geometry.location.lat && res.geometry.location.lng) {

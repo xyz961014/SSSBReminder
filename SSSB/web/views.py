@@ -1,9 +1,11 @@
 from datetime import datetime
 import pytz
+import requests
 from pprint import pprint
 from django.utils import timezone
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.conf import settings
 from django.db.models import Q
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -218,3 +220,25 @@ def get_drawing(request):
     return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
 
 
+@api_view(['GET'])
+def get_geocode(request):
+    address = request.GET.get('address')
+    
+    if not address:
+        return Response({'error': 'Address parameter is required'}, status=400)
+    
+    url = 'https://maps.googleapis.com/maps/api/geocode/json'
+    params = {
+        'address': address,
+        'key': settings.GOOGLE_MAPS_API_KEY
+    }
+    
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        return Response(data)
+    
+    except requests.RequestException as e:
+        return Response({'error': str(e)}, status=500)

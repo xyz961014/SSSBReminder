@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export const baseURL = "https://sssbreminder.xyzs.app/";
+// export const baseURL = "http://localhost:8082";
 const API = axios.create({ baseURL: baseURL });
 
 export const fetchRegions = () => API.get('get_regions');
@@ -12,6 +13,7 @@ export const fetchCreditRange = () => API.get('get_credit_range');
 
 export const fetchFilteredApartments = (filterDict) => API.post('get_filtered_apartments', filterDict);
 // export const fetchApartmentPdf = (object_number, drawing_type) => API.get(`get_drawing?object_number=${object_number}&drawing_type=${drawing_type}`);
+export const fetchGeocode = (address) => API.get(`get_geocode?address=${encodeURIComponent(address)}`);
 
 export const createFilter = (filterDict) => API.post('api/personal_filter/', filterDict);
 

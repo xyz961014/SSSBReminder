@@ -155,3 +155,5 @@ REST_FRAMEWORK = {
 REACT_ROUTES = [
     "apartment",
 ]
+
+GOOGLE_MAPS_API_KEY = config("GOOGLE_MAPS_API_KEY")

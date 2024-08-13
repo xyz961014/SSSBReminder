@@ -12,7 +12,6 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import Title from './Title';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-console.log(pdfjs.GlobalWorkerOptions.workerSrc);
 
 const renderToolbar = (Toolbar: (props: ToolbarProps) => ReactElement) => (
     <Toolbar>
