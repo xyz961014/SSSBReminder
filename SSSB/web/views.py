@@ -98,16 +98,16 @@ def get_rent_range(request):
 def get_floor_range(request):
     apartments = ApartmentInfo.objects.all()
     
-    #floors = [apartment.floor for apartment in apartments if apartment.floor is not None]
-    #
-    #if not floors:
-    #    return Response({'min': None, 'max': None})
+    floors = [apartment.floor for apartment in apartments if apartment.floor is not None]
+    
+    if not floors:
+        return Response({'min': None, 'max': None})
 
-    #min_floor = min(floors)
-    #max_floor = max(floors)
+    min_floor = min(floors)
+    max_floor = max(floors)
 
-    min_floor = 0
-    max_floor = 30
+    #min_floor = 0
+    #max_floor = 30
     
     return Response({'min': min_floor, 'max': max_floor})
 
@@ -155,9 +155,9 @@ def get_filtered_apartments(request):
         filter_dict["monthly_rent__gte"] = filter_data["rentRange"][0]
         filter_dict["monthly_rent__lte"] = filter_data["rentRange"][1]
 
-    #if "floorRange" in filter_data.keys() and len(filter_data["floorRange"]) == 2:
-    #    filter_dict["floor__gte"] = filter_data["floorRange"][0]
-    #    filter_dict["floor__lte"] = filter_data["floorRange"][1]
+    if "floorRange" in filter_data.keys() and len(filter_data["floorRange"]) == 2:
+        filter_dict["floor__gte"] = filter_data["floorRange"][0]
+        filter_dict["floor__lte"] = filter_data["floorRange"][1]
 
     if "electricityIncluded" in filter_data.keys() and filter_data["electricityIncluded"] != "":
         filter_dict["electricity_include__in"] = [filter_data["electricityIncluded"] == "true"]
