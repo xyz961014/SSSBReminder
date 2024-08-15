@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -9,6 +9,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { Link } from '@mui/material';
 import { Box, Chip } from '@mui/material';
 import moment from 'moment';
+import _ from 'lodash';
 
 import Title from './Title';
 
@@ -92,27 +93,34 @@ export default function Apartments({ filterData }) {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
 
+
   useEffect(() => {
 
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(
+    _.debounce(async (filterData) => {
       try {
         setLoading(true);
-        // console.log(filterData);
         const response = await fetchFilteredApartments(filterData);
         setRows(response.data);
-        // console.log(rows);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
+    }, 500), // 500ms
+    []
+  );
 
-  }, [filterData]);
+  useEffect(() => {
+    if (!filterData || Object.keys(filterData).length === 0) {
+      return;
+    }
+    // console.log("RUN", filterData);
+    fetchData(filterData);
+
+  }, [filterData, fetchData]);
 
   return (
     <React.Fragment>

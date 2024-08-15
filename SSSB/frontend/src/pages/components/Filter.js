@@ -143,7 +143,7 @@ export default function Filter({ onFilterChange }) {
   }, []);
 
  useEffect(() => {
-   if (onFilterChange) {
+   if (onFilterChange && !loading) {
      onFilterChange({
        selectedRegion,
        selectedType,

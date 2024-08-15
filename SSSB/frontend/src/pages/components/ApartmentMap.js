@@ -21,7 +21,7 @@ export default function ApartmentMap({ object_number }) {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
 
-  const [center, setCenter] = useState({ lat: 59.353827, lng: 18.079083 });
+  const [center, setCenter] = useState({ lat: 59.3498706, lng: 18.0696129 });
 
   useEffect(() => {
   }, []);
@@ -46,6 +46,15 @@ export default function ApartmentMap({ object_number }) {
                 setCenter({ lat: res.geometry.location.lat, lng: res.geometry.location.lng });
               }
             } 
+            else {
+               //markerRef.current.setTitle("Location Unknown");
+               markerRef.current.setMap(null);
+               const infoWindow = new window.google.maps.InfoWindow({
+                 content: `Location Unknown: ${response.data[0].address}`,
+                 position: mapRef.current.getCenter(),
+               });
+               infoWindow.open(mapRef.current);
+            }
           } catch (error) {
             console.error('Error fetching geocoding data:', error);
           }
@@ -68,7 +77,7 @@ export default function ApartmentMap({ object_number }) {
         markerRef.current.setTitle(apartmentInfo.name);
       }
     }
-  }, [center]);
+  }, [center, apartmentInfo]);
 
   const handleMapLoad = (map) => {
     mapRef.current = map;

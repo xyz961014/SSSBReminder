@@ -364,7 +364,7 @@ class PersonalFilter(models.Model):
     electricity_include = models.BooleanField(null=True, blank=True, default=False)
     rent_free_june_and_july = models.BooleanField(null=True, blank=True, default=False)
     max_4_years = models.BooleanField(null=True, blank=True, default=False)
-    current_credit = models.FloatField(default=1e5) 
+    current_credit = models.IntegerField(default=100000) 
     credit_start = StringDateField(null=True, blank=True, default=None)
     active = models.BooleanField(default=True)
 
@@ -381,14 +381,30 @@ class PersonalFilter(models.Model):
 
     def send_init_mail(self):
         receivers = [self.email]
-        link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+        link = "https://sssbreminder.xyzs.app/?filter_id={}".format(self._id)
 
         curr_path = Path(__file__).resolve().parent
         env = Environment(loader=FileSystemLoader(app_dir / 'SSSB/templates'))
         template = env.get_template('initial_mail.html')  
+
+        data = {
+            "regions": ", ".join(self.regions) if len(self.regions) > 0 else "Not Specified",
+            "types": ", ".join(self.types) if len(self.types) > 0 else "Not Specified",
+            "space": f"{self.living_space['min']} ~ {self.living_space['max']} m²" if self.living_space is not None else "Not Specified",
+            "rent": f"{self.rent['min']} ~ {self.rent['max']} SEK" if self.rent is not None else "Not Specified",
+            "floor": f"{self.floor['min']} ~ {self.floor['max']}" if self.floor is not None else "Not Specified",
+            "current_credit": f"{self.current_credit} days" if self.current_credit is not None else "Not Specified",
+            "credit_start": f"{self.credit_start.strftime('%Y-%m-%d')}" if self.credit_start is not None else "Not Specified",
+            "electricity_include": "Yes" if self.electricity_include else "No" if self.electricity_include is not None else "Not Specified",
+            "rent_free_june_and_july": "Yes" if self.rent_free_june_and_july else "No" if self.rent_free_june_and_july is not None else "Not Specified",
+            "max_4_years": "Yes" if self.max_4_years else "No" if self.max_4_years is not None else "Not Specified",
+            "short_rent": "Yes" if self.short_rent else "No" if self.short_rent is not None else "Not Specified",
+            "modify_url": link,
+        }
+
         msg = build_message(receivers, 
-                            title="SSSB Filter built",
-                            content=template.render(link=link))
+                            title="SSSB Reminder created successfully",
+                            content=template.render(**data))
         send_mail(receivers, msg)
 
     def save(self, *args, **kwargs):

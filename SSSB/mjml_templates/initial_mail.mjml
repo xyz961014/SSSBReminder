@@ -1,0 +1,80 @@
+<mjml>
+  <mj-head>
+    <mj-title>SSSB Reminder Created</mj-title>
+    <mj-preview>Your SSSB Reminder has been created</mj-preview>
+    <mj-attributes>
+      <mj-text font-family="Arial, sans-serif" color="#333333" font-size="16px" />
+      <mj-button background-color="#28a745" color="white" border-radius="5px" font-size="16px" />
+      <mj-table font-family="Arial, sans-serif" color="#333333" font-size="16px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="#f4f4f4" padding="20px">
+      <mj-column>
+        <mj-text>
+          Hej,<br/><br/>
+          Your reminder has been successfully created. Here are the filters you provided:
+        </mj-text>
+        <mj-table>
+          <tr style="background-color:#cccccc; color: #333333;">
+            <th style="padding: 10px 20px; text-align: left;">Field</th>
+            <th style="padding: 10px 20px; text-align: left;">Conditions</th>
+          </tr>
+          <tr style="background-color:#f9f9f9;">
+            <td style="padding: 10px 20px;">Region</td>
+            <td style="padding: 10px 20px;">{{regions}}</td>
+          </tr>
+          <tr style="background-color:#ffffff;">
+            <td style="padding: 10px 20px;">Accommodation Type</td>
+            <td style="padding: 10px 20px;">{{types}}</td>
+          </tr>
+          <tr style="background-color:#f9f9f9;">
+            <td style="padding: 10px 20px;">Living Space</td>
+            <td style="padding: 10px 20px;">{{space}}</td>
+          </tr>
+          <tr style="background-color:#ffffff;">
+            <td style="padding: 10px 20px;">Monthly Rent</td>
+            <td style="padding: 10px 20px;">{{rent}}</td>
+          </tr>
+          <tr style="background-color:#f9f9f9;">
+            <td style="padding: 10px 20px;">Floor</td>
+            <td style="padding: 10px 20px;">{{floor}}</td>
+          </tr>
+          <tr style="background-color:#ffffff;">
+            <td style="padding: 10px 20px;">Your Credit Days</td>
+            <td style="padding: 10px 20px;">{{current_credit}} (Start from {{credit_start}})</td>
+          </tr>
+          <tr style="background-color:#f9f9f9;">
+            <td style="padding: 10px 20px;">Electricity Included</td>
+            <td style="padding: 10px 20px;">{{electricity_include}}</td>
+          </tr>
+          <tr style="background-color:#ffffff;">
+            <td style="padding: 10px 20px;">June & July Free</td>
+            <td style="padding: 10px 20px;">{{rent_free_june_and_july}}</td>
+          </tr>
+          <tr style="background-color:#f9f9f9;">
+            <td style="padding: 10px 20px;">Max 4 Years</td>
+            <td style="padding: 10px 20px;">{{max_4_years}}</td>
+          </tr>
+          <tr style="background-color:#f9f9f9;">
+            <td style="padding: 10px 20px;">Short Rent</td>
+            <td style="padding: 10px 20px;">{{short_rent}}</td>
+          </tr>
+        </mj-table>
+        <mj-text>
+          If you would like to modify or unsubscribe of your reminder, please click the button below.
+        </mj-text>
+        <mj-button href="{{modify_url}}" align="center">
+          Modify Reminder
+        </mj-button>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" padding="10px">
+      <mj-column>
+        <mj-text font-size="12px" color="#555555">
+          SSSB Reminder
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
