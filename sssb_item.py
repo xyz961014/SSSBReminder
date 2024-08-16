@@ -279,7 +279,7 @@ class ApartmentAmount(SSSBItem):
 
 class PersonalFilter(SSSBItem):
     _collection = db["personal_filter"]
-    def __init__(self, email, regions, types, space, rent,
+    def __init__(self, email, regions, types, living_space, rent,
                        floor=None,
                        distance=0,
                        short_rent=False,
@@ -301,7 +301,7 @@ class PersonalFilter(SSSBItem):
         self.regions = regions
         self.types = types
         self.floor = floor
-        self.space = space
+        self.living_space = living_space
         self.rent = rent
         if type(distance) == str:
             if not distance.strip() == "":
@@ -403,27 +403,24 @@ class PersonalFilter(SSSBItem):
                     candidates[i].cycling_time = c.distances[distance_to]["cycling"]["time"]
             return candidates
 
-        new_recommendations = add_distance(new_recommendations, "KTH")
-        unchange_recommendations = add_distance(unchange_recommendations, "KTH")
-        old_recommendations = add_distance(old_recommendations, "KTH")
+        #new_recommendations = add_distance(new_recommendations, "KTH")
+        #unchange_recommendations = add_distance(unchange_recommendations, "KTH")
+        #old_recommendations = add_distance(old_recommendations, "KTH")
         new_recommendations = get_bid(new_recommendations)
         unchange_recommendations = get_bid(unchange_recommendations)
         old_recommendations = get_bid(old_recommendations)
 
         curr_path = Path(__file__).resolve().parent
-        env = Environment(loader=FileSystemLoader(os.path.join(curr_path, 'SSSB/SSSB/templates')))
+        env = Environment(loader=FileSystemLoader(os.path.join(curr_path, 'SSSB/templates')))
         template = env.get_template('recommendation_mail.html')  
 
-        link = "https://sssb.thufootball.tech/filter?id={}".format(self._id)
+        link = "https://sssbreminder.xyzs.app/?filter_id={}".format(self._id)
         msg = build_message(receivers, 
-                            title="SSSB RECOMMENDATIONS!",
+                            title="New SSSB Reminder!",
                             content=template.render(new_recommendations=new_recommendations,
                                                     unchange_recommendations=unchange_recommendations,
                                                     old_recommendations=old_recommendations,
-                                                    link=link))
-                                #"New Recommendations": new_recommendations,
-                                #"Unchange Recommendations": unchange_recommendations,
-                                #"Recommendations No Longer Applicable": old_recommendations}))
+                                                    modify_url=link))
         send_mail(receivers, msg)
 
 

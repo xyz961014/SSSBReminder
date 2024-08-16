@@ -1,0 +1,122 @@
+<mjml>
+  <mj-head>
+    <mj-title>SSSB Reminder</mj-title>
+    <mj-preview>Your available apartments have changed!</mj-preview>
+    <mj-attributes>
+      <mj-text font-family="Arial, sans-serif" color="#333333" font-size="16px" />
+      <mj-button background-color="#007BFF" color="white" border-radius="5px" font-size="16px" />
+      <mj-table font-family="Arial, sans-serif" color="#333333" font-size="14px" cellpadding="10" />
+      <mj-section padding="20px" />
+      <mj-column padding="10px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#ffffff" border-radius="10px" padding="10px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold">
+          Your available apartments have changed!
+        </mj-text>
+
+        {% if new_recommendations|length > 0 %}
+        <mj-text font-size="18px" font-weight="bold">
+          New Recommendations:
+        </mj-text>
+        <mj-table>
+          <tr style="background-color:#007BFF; color:white;">
+            <th>Address</th>
+            <th>Space</th>
+            <th>Rent</th>
+            <th>Credits</th>
+            <th>DDL</th>
+          </tr>
+          {% for item in new_recommendations %}
+          <tr style="background-color:{% if loop.index0 % 2 == 0 %}#f9f9f9{% else %}#ffffff{% endif %};">
+            <td>
+              <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}" 
+                 style="color:#007BFF; text-decoration:none;">
+                {{ item.name }}
+              </a>
+              <br />
+             {{ item.housing_area }}
+            </td>
+            <td>{{ item.living_space }} m<sup>2</sup></td>
+            <td>{{ item.monthly_rent }} SEK</td>
+            <td>{{ item.credit }} days</td>
+            <td>{{ item.application_ddl }}</td>
+          </tr>
+          {% endfor %}
+        </mj-table>
+        {% endif %}
+
+        {% if unchange_recommendations|length > 0 %}
+        <mj-text font-size="18px" font-weight="bold">
+          Still Recommended:
+        </mj-text>
+        <mj-table>
+          <tr style="background-color:#007BFF; color:white;">
+            <th>Address</th>
+            <th>Space</th>
+            <th>Rent</th>
+            <th>Credits</th>
+            <th>DDL</th>
+          </tr>
+          {% for item in unchange_recommendations %}
+          <tr style="background-color:{% if loop.index0 % 2 == 0 %}#f9f9f9{% else %}#ffffff{% endif %};">
+            <td>
+              <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}" 
+                 style="color:#007BFF; text-decoration:none;">
+                {{ item.name }}
+              </a>
+              <br />
+              {{ item.housing_area }}
+            </td>
+            <td>{{ item.living_space }} m<sup>2</sup></td>
+            <td>{{ item.monthly_rent }} SEK</td>
+            <td>{{ item.credit }} days</td>
+            <td>{{ item.application_ddl }}</td>
+          </tr>
+          {% endfor %}
+        </mj-table>
+        {% endif %}
+
+        {% if old_recommendations|length > 0 %}
+        <mj-text font-size="18px" font-weight="bold">
+          No Longer Applicable:
+        </mj-text>
+        <mj-table>
+          <tr style="background-color:#AA0000; color:white;">
+            <th>Address</th>
+            <th>Space</th>
+            <th>Rent</th>
+            <th>Credits</th>
+            <th>DDL</th>
+          </tr>
+          {% for item in old_recommendations %}
+          <tr style="background-color:{% if loop.index0 % 2 == 0 %}#f9f9f9{% else %}#ffffff{% endif %};">
+            <td>
+              <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}" 
+                 style="color:#007BFF; text-decoration:none;">
+                {{ item.name }}
+              </a>
+              <br />
+              {{ item.housing_area }}
+            </td>
+            <td>{{ item.living_space }} m<sup>2</sup></td>
+            <td>{{ item.monthly_rent }} SEK</td>
+            <td>{{ item.credit }} days</td>
+            <td>{{ item.application_ddl }}</td>
+          </tr>
+          {% endfor %}
+        </mj-table>
+        {% endif %}
+
+        <mj-text>
+          If you would like to modify or unsubscribe of your reminder, please click the button below.
+        </mj-text>
+        <mj-button href="{{modify_url}}">
+          Modify Reminder
+        </mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

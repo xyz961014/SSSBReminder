@@ -274,23 +274,22 @@ class SSSBWebSpider(object):
 def check_personal_filters():
     filters = PersonalFilter.find_many({"active": True})
     for f in tqdm(filters, desc="Checking filters"):
-        info_condition = {
-                "housing_area": {"$in": f.regions},
-                "accommodation_type": {"$in": f.types},
-                "electricity_include": f.electricity_include,
-                "rent_free_june_and_july": f.rent_free_june_and_july,
-                "max_4_years": f.max_4_years
-                         }
-        if not f.space["unspecified"]:
-            if f.space["min"]:
+        info_condition = {}
+        if f.regions is not None and len(f.regions) > 0:
+            info_condition["housing_area"] = {"$in": f.regions}
+        if f.types is not None and len(f.types) > 0:
+            info_condition["accommodation_type"] = {"$in": f.types}
+
+        if f.living_space is not None:
+            if f.living_space["min"]:
                 if not "living_space" in info_condition.keys():
                     info_condition["living_space"] = {}
-                info_condition["living_space"]["$gte"] = int(f.space["min"])
-            if f.space["max"]:
+                info_condition["living_space"]["$gte"] = int(f.living_space["min"])
+            if f.living_space["max"]:
                 if not "living_space" in info_condition.keys():
                     info_condition["living_space"] = {}
-                info_condition["living_space"]["$lte"] = int(f.space["max"])
-        if not f.rent["unspecified"]:
+                info_condition["living_space"]["$lte"] = int(f.living_space["max"])
+        if f.rent is not None:
             if f.rent["min"]:
                 if not "monthly_rent" in info_condition.keys():
                     info_condition["monthly_rent"] = {}
@@ -299,8 +298,27 @@ def check_personal_filters():
                 if not "monthly_rent" in info_condition.keys():
                     info_condition["monthly_rent"] = {}
                 info_condition["monthly_rent"]["$lte"] = int(f.rent["max"])
-        if f.short_rent:
-            info_condition["end_date"] = {"$ne": None}
+        if f.floor is not None:
+            if f.floor["min"]:
+                if not "floor" in info_condition.keys():
+                    info_condition["floor"] = {}
+                info_condition["floor"]["$gte"] = int(f.floor["min"])
+            if f.floor["max"]:
+                if not "floor" in info_condition.keys():
+                    info_condition["floor"] = {}
+                info_condition["floor"]["$lte"] = int(f.floor["max"])
+
+        if f.electricity_include is not None:
+            info_condition["electricity_include"] = f.electricity_include
+        if f.rent_free_june_and_july is not None:
+            info_condition["rent_free_june_and_july"] = f.rent_free_june_and_july
+        if f.max_4_years is not None:
+            info_condition["max_4_years"] = f.max_4_years
+        if f.short_rent is not None:
+            if f.short_rent:
+                info_condition["end_date"] = {"$ne": None}
+            else:
+                info_condition["end_date"] = None
         candidates = ApartmentInfo.find_many(info_condition)
         candidates = [c for c in candidates if c.is_active()]
         person_credit = f.get_credit()
