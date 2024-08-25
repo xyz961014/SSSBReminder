@@ -395,6 +395,7 @@ export default function Filter({ onFilterChange }) {
               min={rentMin}
               max={rentMax}
               sx={{ mt: 5 }}
+              disabled={rentUnspecified}
             />
           </Box>
         </FormGrid>
@@ -423,6 +424,7 @@ export default function Filter({ onFilterChange }) {
               min={floorMin}
               max={floorMax}
               sx={{ mt: 5 }}
+              disabled={floorUnspecified}
             />
           </Box>
         </FormGrid>
@@ -451,6 +453,7 @@ export default function Filter({ onFilterChange }) {
               min={creditMin}
               max={creditMax}
               sx={{ mt: 5 }}
+              disabled={creditUnspecified}
             />
           </Box>
         </FormGrid>
