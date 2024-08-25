@@ -50,6 +50,11 @@ export default function Filter({ onFilterChange }) {
   const [loading, setLoading] = useState(true);
   const [showExpired, setShowExpired] = useState(false);
 
+  const [spaceUnspecified, setSpaceUnspecified] = useState(false);
+  const [rentUnspecified, setRentUnspecified] = useState(false);
+  const [floorUnspecified, setFloorUnspecified] = useState(false);
+  const [creditUnspecified, setCreditUnspecified] = useState(false);
+
   const [regions, setRegions] = useState([]);
   const [types, setTypes] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState([]);
@@ -151,6 +156,10 @@ export default function Filter({ onFilterChange }) {
        rentRange,
        floorRange,
        creditRange,
+       spaceUnspecified,
+       rentUnspecified,
+       floorUnspecified,
+       creditUnspecified,
        validFromBefore,
        electricityIncluded,
        summerFree,
@@ -166,6 +175,10 @@ export default function Filter({ onFilterChange }) {
     rentRange,
     floorRange,
     creditRange,
+    spaceUnspecified,
+    rentUnspecified,
+    floorUnspecified,
+    creditUnspecified,
     validFromBefore,
     electricityIncluded,
     summerFree,
@@ -329,6 +342,17 @@ export default function Filter({ onFilterChange }) {
         <FormGrid item xs={12}>
           <FormLabel htmlFor="space">
             Living Space (m²)
+            <FormControlLabel 
+              control={
+                <Switch 
+                  checked={spaceUnspecified}
+                  onChange={(e) => setSpaceUnspecified(e.target.checked)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              } 
+              label="Not Specified" 
+              sx={{ ml: 1 }}
+            />
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <Slider
@@ -339,13 +363,28 @@ export default function Filter({ onFilterChange }) {
               min={spaceMin}
               max={spaceMax}
               sx={{ mt: 5 }}
+              disabled={spaceUnspecified}
             />
+
           </Box>
         </FormGrid>
 
         <FormGrid item xs={12}>
           <FormLabel htmlFor="rent">
             Monthly Rent (SEK)
+
+            <FormControlLabel 
+              control={
+                <Switch 
+                  checked={rentUnspecified}
+                  onChange={(e) => setRentUnspecified(e.target.checked)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              } 
+              label="Not Specified" 
+              sx={{ ml: 1 }}
+            />
+
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <Slider
@@ -363,6 +402,17 @@ export default function Filter({ onFilterChange }) {
         <FormGrid item xs={12}>
           <FormLabel htmlFor="floor">
             Floor
+            <FormControlLabel 
+              control={
+                <Switch 
+                  checked={floorUnspecified}
+                  onChange={(e) => setFloorUnspecified(e.target.checked)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              } 
+              label="Not Specified" 
+              sx={{ ml: 1 }}
+            />
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <Slider
@@ -380,6 +430,17 @@ export default function Filter({ onFilterChange }) {
         <FormGrid item xs={12}>
           <FormLabel htmlFor="credit">
             Credit Days Required
+            <FormControlLabel 
+              control={
+                <Switch 
+                  checked={creditUnspecified}
+                  onChange={(e) => setCreditUnspecified(e.target.checked)}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              } 
+              label="Not Specified" 
+              sx={{ ml: 1 }}
+            />
           </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
             <Slider

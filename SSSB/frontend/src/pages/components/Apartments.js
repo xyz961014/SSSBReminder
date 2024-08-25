@@ -102,6 +102,12 @@ export default function Apartments({ filterData }) {
     _.debounce(async (filterData) => {
       try {
         setLoading(true);
+        const range_names = ["space", "rent", "floor", "credit"];
+        range_names.forEach((name) => {
+            if (filterData[`${name}Unspecified`]) {
+                filterData[`${name}Range`] = [];
+            }
+        });
         const response = await fetchFilteredApartments(filterData);
         setRows(response.data);
       } catch (error) {
