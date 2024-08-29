@@ -279,6 +279,8 @@ def check_personal_filters():
             info_condition["housing_area"] = {"$in": f.regions}
         if f.types is not None and len(f.types) > 0:
             info_condition["accommodation_type"] = {"$in": f.types}
+        if f.address is not None and type(f.address) is str and f.address.strip() != "":
+            info_condition["address"] = {"$regex": f.address, "$options": "i"}
 
         if f.living_space is not None:
             if f.living_space["min"]:

@@ -280,6 +280,7 @@ class ApartmentAmount(SSSBItem):
 class PersonalFilter(SSSBItem):
     _collection = db["personal_filter"]
     def __init__(self, email, regions, types, living_space, rent,
+                       address=None,
                        floor=None,
                        distance=0,
                        short_rent=False,
@@ -300,6 +301,7 @@ class PersonalFilter(SSSBItem):
             self.credit_start = self.get_credit_start(current_credit)
         self.regions = regions
         self.types = types
+        self.address = address
         self.floor = floor
         self.living_space = living_space
         self.rent = rent

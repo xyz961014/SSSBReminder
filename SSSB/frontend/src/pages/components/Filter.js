@@ -60,6 +60,8 @@ export default function Filter({ onFilterChange }) {
   const [selectedRegion, setSelectedRegion] = useState([]);
   const [selectedType, setSelectedType] = useState([]);
 
+  const [address, setAddress] = useState(null);
+
   const [spaceMin, setSpaceMin] = useState(0);
   const [spaceMax, setSpaceMax] = useState(200);
   const [spaceRange, setSpaceRange] = useState([0, 100]);
@@ -152,6 +154,7 @@ export default function Filter({ onFilterChange }) {
      onFilterChange({
        selectedRegion,
        selectedType,
+       address,
        spaceRange,
        rentRange,
        floorRange,
@@ -171,6 +174,7 @@ export default function Filter({ onFilterChange }) {
   }, [
     selectedRegion,
     selectedType,
+    address,
     spaceRange,
     rentRange,
     floorRange,
@@ -211,6 +215,7 @@ export default function Filter({ onFilterChange }) {
           "email": email,
           "regions": selectedRegion,
           "types": selectedType,
+          "address": address,
           "living_space": {
             "min": spaceRange[0],
             "max": spaceRange[1],
@@ -336,6 +341,20 @@ export default function Filter({ onFilterChange }) {
             <Button variant="text" sx={{ ml: 2}} onClick={() => {setSelectedType([]);}}>
               Clear All
             </Button>
+          </Box>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="address">
+            Address
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <TextField
+                margin="dense"
+                label="Address"
+                fullWidth
+                onChange={(e) => setAddress(e.target.value)}
+            />
           </Box>
         </FormGrid>
 
@@ -632,6 +651,10 @@ export default function Filter({ onFilterChange }) {
                     {
                       "label": "Accomodation Type",
                       "value": selectedType.length > 0 ? selectedType.join(", ") : "Not Specified",
+                    },
+                    {
+                      "label": "Address",
+                      "value": address.length > 0 ? address : "Not Specified",
                     },
                     {
                       "label": "Living Space",
