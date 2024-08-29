@@ -354,6 +354,7 @@ class PersonalFilter(models.Model):
     email = models.EmailField(max_length=255)
     regions = JSONField(null=True, blank=True, default=None)
     types = JSONField(null=True, blank=True, default=None)
+    address = models.CharField(max_length=255, null=True, blank=True, default=None)
     
     # [min, max] fields
     living_space = JSONField(null=True, blank=True, default=None)

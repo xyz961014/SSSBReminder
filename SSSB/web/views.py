@@ -149,6 +149,9 @@ def get_filtered_apartments(request):
     if "selectedType" in filter_data.keys() and len(filter_data["selectedType"]) > 0:
         filter_dict["accommodation_type__in"] = filter_data["selectedType"]
 
+    if "address" in filter_data.keys() and type(filter_data["address"]) is str:
+        filter_dict["address__contains"] = filter_data["address"].strip()
+
     if "spaceRange" in filter_data.keys() and len(filter_data["spaceRange"]) == 2:
         filter_dict["living_space__gte"] = filter_data["spaceRange"][0]
         filter_dict["living_space__lte"] = filter_data["spaceRange"][1]
