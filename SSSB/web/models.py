@@ -391,6 +391,7 @@ class PersonalFilter(models.Model):
         data = {
             "regions": ", ".join(self.regions) if len(self.regions) > 0 else "Not Specified",
             "types": ", ".join(self.types) if len(self.types) > 0 else "Not Specified",
+            "address": self.address if self.address is not None and type(self.address) is str and self.address.strip() != "" else "Not Specified",
             "space": f"{self.living_space['min']} ~ {self.living_space['max']} m²" if self.living_space is not None else "Not Specified",
             "rent": f"{self.rent['min']} ~ {self.rent['max']} SEK" if self.rent is not None else "Not Specified",
             "floor": f"{self.floor['min']} ~ {self.floor['max']}" if self.floor is not None else "Not Specified",

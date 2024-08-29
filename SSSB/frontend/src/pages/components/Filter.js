@@ -654,7 +654,7 @@ export default function Filter({ onFilterChange }) {
                     },
                     {
                       "label": "Address",
-                      "value": address.length > 0 ? address : "Not Specified",
+                      "value": address && address.length > 0 ? address : "Not Specified",
                     },
                     {
                       "label": "Living Space",
