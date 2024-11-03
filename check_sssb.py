@@ -109,11 +109,20 @@ class SSSBWebSpider(object):
     def check_apartment_urls(self):
         uncrawled_urls = ApartmentURL.find_many({"crawled": False})
         for url_item in tqdm(uncrawled_urls, file=sys.stdout, desc="Checking apartments"):
+
+            time_delta = datetime.now() - datetime.strptime(url_item.update_time, "%Y-%m-%d %H:%M:%S")
+            if time_delta > timedelta(hours=6):
+                url_item.crawled = True
+                url_item.save()
+                tqdm.write(f"URL {url_item.url} expired.")
+                continue
+
             try:
                 self.check_apartment_url(url_item)
                 #tqdm.write("complete")
             except Exception as e:
                 print("Error: {}, Skipped".format(e))
+
 
 
     def check_apartment_url(self, url_item):
@@ -194,18 +203,21 @@ class SSSBWebSpider(object):
         drawing_area = self.browser.find_element(by="class name", value="ObjektDokument")
         buttons = drawing_area.find_elements(by="class name", value="btn")
         apartment_drawing, floor_drawing = None, None
-        for button in buttons:
-            button_name = button.text
-            button_url = button.get_attribute("href")
-            resource_name = "./resources/{}_{}.pdf".format(object_number, button_name) 
-            if not os.path.exists(resource_name):
-                r = requests.get(button_url) 
-                if button_name == "APARTMENT DRAWING":
-                    apartment_drawing = resource_name 
-                elif button_name == "FLOOR DRAWING":
-                    floor_drawing = resource_name 
-                with open(resource_name, "wb") as code:
-                     code.write(r.content)
+        try:
+            for button in buttons:
+                button_name = button.text
+                button_url = button.get_attribute("href")
+                resource_name = "./resources/{}_{}.pdf".format(object_number, button_name) 
+                if not os.path.exists(resource_name):
+                    r = requests.get(button_url, verify=False) 
+                    if button_name == "APARTMENT DRAWING":
+                        apartment_drawing = resource_name 
+                    elif button_name == "FLOOR DRAWING":
+                        floor_drawing = resource_name 
+                    with open(resource_name, "wb") as code:
+                         code.write(r.content)
+        except Exception as e:
+            pass
 
         self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'Objektintressestatus')))
         apartment_status = self.browser.find_element(by='class name', value='Objektintressestatus')

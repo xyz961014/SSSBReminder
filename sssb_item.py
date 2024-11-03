@@ -12,7 +12,7 @@ from pymongo.errors import ServerSelectionTimeoutError
 import socket
 hostname = socket.gethostname()
 mongo_path = "mongodb://mongo:27017"
-mongo_path_local = "mongodb://localhost:1027"
+mongo_path_local = "mongodb://localhost:1029"
 try:
     client = pymongo.MongoClient(mongo_path, serverSelectionTimeoutMS=5000)
     client.admin.command("ping")
