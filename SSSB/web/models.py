@@ -97,7 +97,7 @@ class StringDateTimeField(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value)
                 stockholm_tz = pytz.timezone("Europe/Stockholm")
                 localized_datetime = stockholm_tz.localize(naive_datetime)
                 return localized_datetime
@@ -110,7 +110,7 @@ class StringDateTimeField(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value)
                 stockholm_tz = pytz.timezone("Europe/Stockholm")
                 localized_datetime = stockholm_tz.localize(naive_datetime)
                 return localized_datetime
@@ -132,7 +132,7 @@ class StringDateTimeFieldUTC(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value)
                 localized_datetime = pytz.utc.localize(naive_datetime)
                 return localized_datetime
             except ValueError:
@@ -144,7 +144,7 @@ class StringDateTimeFieldUTC(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value)
                 localized_datetime = pytz.utc.localize(naive_datetime)
                 return localized_datetime
             except ValueError:
