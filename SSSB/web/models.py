@@ -15,6 +15,31 @@ from jinja2 import Environment, FileSystemLoader
 
 # Create your models here.
 
+def parse_datetime_with_24_hour(value):
+    """
+    Parses a datetime string, handling the special case where the time is '24:00:00'.
+    
+    Args:
+        value (str): The datetime string in the format '%Y-%m-%d %H:%M:%S', 
+                     e.g., '2024-11-18 24:00:00'.
+    
+    Returns:
+        datetime: A datetime object representing the parsed datetime.
+    """
+    try:
+        if "24:00:00" in value:
+            # Split into date and time components
+            date_part, _ = value.split(' ')
+            # Replace '24:00:00' with '00:00:00' and add one day
+            value = f"{date_part} 00:00:00"
+            naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S') + timedelta(days=1)
+        else:
+            # Parse normally if no '24:00:00' is found
+            naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        return naive_datetime
+    except ValueError as e:
+        raise ValueError(f"Invalid datetime format: {value}") from e
+
 class ObjectIdField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 24
@@ -72,7 +97,7 @@ class StringDateTimeField(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
                 stockholm_tz = pytz.timezone("Europe/Stockholm")
                 localized_datetime = stockholm_tz.localize(naive_datetime)
                 return localized_datetime
@@ -85,7 +110,7 @@ class StringDateTimeField(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
                 stockholm_tz = pytz.timezone("Europe/Stockholm")
                 localized_datetime = stockholm_tz.localize(naive_datetime)
                 return localized_datetime
@@ -107,7 +132,7 @@ class StringDateTimeFieldUTC(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
                 localized_datetime = pytz.utc.localize(naive_datetime)
                 return localized_datetime
             except ValueError:
@@ -119,7 +144,7 @@ class StringDateTimeFieldUTC(models.DateTimeField):
             return value
         if isinstance(value, str):
             try:
-                naive_datetime = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                naive_datetime = parse_datetime_with_24_hour(value, '%Y-%m-%d %H:%M:%S')
                 localized_datetime = pytz.utc.localize(naive_datetime)
                 return localized_datetime
             except ValueError:
