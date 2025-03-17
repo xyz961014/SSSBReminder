@@ -16,6 +16,7 @@ export const fetchFilteredApartments = (filterDict) => API.post('get_filtered_ap
 export const fetchGeocode = (address) => API.get(`get_geocode?address=${encodeURIComponent(address)}`);
 
 export const createFilter = (filterDict) => API.post('api/personal_filter/', filterDict);
+export const editFilter = (filterDict) => API.post('edit_personal_filter', {"filter_data": filterDict});
 
 export const fetchApartmentInfo = (object_number) => API.get(`api/apartment_info/?object_number=${object_number}`);
 export const fetchApartmentStatus = (object_number) => API.get(`api/apartment_status/?object_number=${object_number}`);

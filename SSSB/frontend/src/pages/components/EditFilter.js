@@ -29,7 +29,7 @@ import MultipleSelectChip from './MultiSelectShip';
 import { fetchRegions, fetchTypes } from '../../Api'
 import { fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
 import { fetchFilterData, unsubscribeFilter } from '../../Api';
-import { createFilter } from '../../Api'
+import { editFilter } from '../../Api'
 
 const FormGrid = styled(Grid)(() => ({
   display: 'flex',
@@ -116,10 +116,10 @@ export default function EditFilter({ filterId, onFilterChange }) {
           } else {
             setFloorUnspecified(true);
           }
-          setEletricityIncluded(filterData.electricity_include !== null ? filterData.electricity_include : '');
-          setSummerFree(filterData.rent_free_june_and_july !== null ? filterData.rent_free_june_and_july : '');
-          setMax4Years(filterData.max_4_years !== null ? filterData.max_4_years : '');
-          setShortRent(filterData.short_rent !== null ? filterData.short_rent : '');
+          setEletricityIncluded(filterData.electricity_include !== null ? (filterData.electricity_include ? 'true' : 'false') : '');
+          setSummerFree(filterData.rent_free_june_and_july !== null ? (filterData.rent_free_june_and_july ? 'true' : 'false') : '');
+          setMax4Years(filterData.max_4_years !== null ? (filterData.max_4_years ? 'true' : 'false') : '');
+          setShortRent(filterData.short_rent !== null ? (filterData.short_rent ? 'true' : 'false') : '');
 
           setEmail(filterData.email);
           setCredit(filterData.current_credit);
@@ -236,12 +236,13 @@ export default function EditFilter({ filterId, onFilterChange }) {
     setSelectedType(value);
   };
 
-  const handleCreateReminder = async () => {
+  const handleEditReminder = async () => {
     try {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       setError(!emailRegex.test(email));
       if (!error) {
         const filterDict = {
+          "filter_id": filterId,
           "email": email,
           "regions": selectedRegion,
           "types": selectedType,
@@ -258,15 +259,15 @@ export default function EditFilter({ filterId, onFilterChange }) {
             "min": floorRange[0],
             "max": floorRange[1],
           },
-          "short_rent": shortRent !== "" ? shortRent: null,
-          "electricity_include": electricityIncluded !== "" ? electricityIncluded : null,
-          "rent_free_june_and_july": summerFree !== "" ? summerFree : null,
-          "max_4_years": max4Years !== "" ? max4Years : null,
+          "electricity_include": electricityIncluded !== "" ? electricityIncluded === "true" : null,
+          "rent_free_june_and_july": summerFree !== "" ? summerFree === "true" : null,
+          "max_4_years": max4Years !== "" ? max4Years === "true" : null,
+          "short_rent": shortRent !== "" ? shortRent === "true" : null,
           "current_credit": credit,
         };
         // console.log(filterDict)
         setDialogLoading(true);
-        const response = await createFilter(filterDict);
+        const response = await editFilter(filterDict);
         setDialogLoading(false);
         setDialogOpen(false);
         setSuccessSnackbarOpen(true);
@@ -282,13 +283,16 @@ export default function EditFilter({ filterId, onFilterChange }) {
   const handleUnsubscribe = () => {
     const unsubscribe = async () => {
       try {
+        setLoading(true);
         const response = await unsubscribeFilter(filterId);
-        console.log(response);
-        if (response) {
-          window.location.reload(); // 成功后刷新页面
+        if (response.data && response.data.success) {
+          setActive(false);
         }
       }
       catch {
+      }
+      finally {
+        setLoading(false);
       }
     }
     if (filterId) {
@@ -300,6 +304,39 @@ export default function EditFilter({ filterId, onFilterChange }) {
     <React.Fragment>
       <LoadingBox loading={loading}>
       <Grid container spacing={2}>
+
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="space">
+            Reminder Email: {email}
+          </FormLabel>
+        </FormGrid>
+        <FormGrid item xs={12}>
+          <FormLabel htmlFor="space">
+            Credit Days: {credit}
+          </FormLabel>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <Box sx={{ display: 'flex', mb: 2, gap: 2 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<CancelIcon />}
+              onClick={handleUnsubscribe}
+              disabled={!active}
+            >
+              Unsubscribe
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => setDialogOpen(true)}
+              disabled={!active}
+            >
+              Edit Reminder
+            </Button>
+          </Box>
+        </FormGrid>
 
         <FormGrid item xs={12}>
           <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 2 }}>
@@ -527,34 +564,13 @@ export default function EditFilter({ filterId, onFilterChange }) {
           </Box>
         </FormGrid>
 
-        <FormGrid item xs={12}>
-          <Box sx={{ display: 'flex', mb: 2, gap: 2 }}>
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<CancelIcon />}
-              onClick={handleUnsubscribe}
-              disabled={!active}
-            >
-              Unsubscribe
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<EditIcon />}
-              onClick={() => setDialogOpen(true)}
-              disabled={!active}
-            >
-              Edit Reminder
-            </Button>
-          </Box>
-        </FormGrid>
 
       </Grid>
       </LoadingBox>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
         <LoadingBox loading={dialogLoading}>
-          <DialogTitle>Create Reminder</DialogTitle>
+          <DialogTitle>Edit Reminder</DialogTitle>
           <DialogContent>
               <DialogContentText>
                 Please enter your email address
@@ -640,7 +656,7 @@ export default function EditFilter({ filterId, onFilterChange }) {
               <Button onClick={() => setDialogOpen(false)} color="error">
                   Cancel
               </Button>
-              <Button onClick={handleCreateReminder} color="primary">
+              <Button onClick={handleEditReminder} color="primary">
                   Confirm
               </Button>
           </DialogActions>
