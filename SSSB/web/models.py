@@ -434,6 +434,35 @@ class PersonalFilter(models.Model):
                             content=template.render(**data))
         send_mail(receivers, msg)
 
+    def send_edit_mail(self):
+        receivers = [self.email]
+        link = "https://sssbreminder.xyzs.app/?filter_id={}".format(self._id)
+
+        curr_path = Path(__file__).resolve().parent
+        env = Environment(loader=FileSystemLoader(app_dir / 'SSSB/templates'))
+        template = env.get_template('edit_mail.html')  
+
+        data = {
+            "regions": ", ".join(self.regions) if len(self.regions) > 0 else "Not Specified",
+            "types": ", ".join(self.types) if len(self.types) > 0 else "Not Specified",
+            "address": self.address if self.address is not None and type(self.address) is str and self.address.strip() != "" else "Not Specified",
+            "space": f"{self.living_space['min']} ~ {self.living_space['max']} m²" if self.living_space is not None else "Not Specified",
+            "rent": f"{self.rent['min']} ~ {self.rent['max']} SEK" if self.rent is not None else "Not Specified",
+            "floor": f"{self.floor['min']} ~ {self.floor['max']}" if self.floor is not None else "Not Specified",
+            "current_credit": f"{self.current_credit} days" if self.current_credit is not None else "Not Specified",
+            "credit_start": f"{self.credit_start.strftime('%Y-%m-%d')}" if self.credit_start is not None else "Not Specified",
+            "electricity_include": "Yes" if self.electricity_include else "No" if self.electricity_include is not None else "Not Specified",
+            "rent_free_june_and_july": "Yes" if self.rent_free_june_and_july else "No" if self.rent_free_june_and_july is not None else "Not Specified",
+            "max_4_years": "Yes" if self.max_4_years else "No" if self.max_4_years is not None else "Not Specified",
+            "short_rent": "Yes" if self.short_rent else "No" if self.short_rent is not None else "Not Specified",
+            "modify_url": link,
+        }
+
+        msg = build_message(receivers, 
+                            title="SSSB Reminder edited successfully",
+                            content=template.render(**data))
+        send_mail(receivers, msg)
+
     def save(self, *args, **kwargs):
         if self.credit_start is None:
             self.credit_start = self.get_credit_start(self.current_credit)
