@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { useEffect, useState } from 'react';
 import { useCallback } from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+import { useLocation } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
@@ -19,6 +20,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 import Filter from './components/Filter';
+import EditFilter from './components/EditFilter';
 import Apartments from './components/Apartments';
 import { fetchApartmentAmount } from '../Api';
 
@@ -78,6 +80,10 @@ const HomePage = () => {
     setOpen(!open);
   };
 
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const [filterId, SetFilterId] = useState(searchParams.get("filter_id"));
+
   const [filterData, setFilterData] = useState({});
 
   const handleFilterDataChange = useCallback((data) => {
@@ -116,9 +122,8 @@ const HomePage = () => {
         </Grid> 
         <Grid
           item
-          xs={12}
+          xs={5}
           sm={4}
-          lg={3}
           sx={{
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
@@ -133,13 +138,16 @@ const HomePage = () => {
           }}
         >
           <Toolbar />
-          <Filter onFilterChange={handleFilterDataChange} />
+          {filterId ? (
+            <EditFilter filterId={filterId} onFilterChange={handleFilterDataChange} />
+          ) : (
+            <Filter onFilterChange={handleFilterDataChange} />
+          )}
         </Grid>
         <Grid
           item
-          xs={12}
+          xs={7}
           sm={8}
-          lg={9}
           sx={{
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',

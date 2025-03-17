@@ -24,6 +24,7 @@ import LoadingBox from './LoadingBox';
 import Descriptions from './Descriptions';
 import LocalDatePicker from './LocalDatePicker';
 import SuccessSnackbar from './SimpleSnackbar';
+import MultipleSelectChip from './MultiSelectShip';
 import { fetchRegions, fetchTypes } from '../../Api'
 import { fetchSpaceRange, fetchRentRange, fetchFloorRange, fetchCreditRange } from '../../Api'
 import { createFilter } from '../../Api'
@@ -114,9 +115,19 @@ export default function Filter({ onFilterChange }) {
         ]);
   
         const regions = regionsResponse.data;
+        regions.sort((ra, rb) => {
+          if (ra > rb) return 1;
+          if (ra < rb) return -1;
+          return 0;
+        })
         setRegions(regions);
   
         const types = typesResponse.data;
+        types.sort((ta, tb) => {
+          if (ta > tb) return 1;
+          if (ta < tb) return -1;
+          return 0;
+        })
         setTypes(types);
   
         const spaceRange = [spaceRangeResponse.data.min || 0, spaceRangeResponse.data.max || 100];
@@ -216,15 +227,15 @@ export default function Filter({ onFilterChange }) {
           "regions": selectedRegion,
           "types": selectedType,
           "address": address,
-          "living_space": {
+          "living_space": spaceUnspecified ? null : {
             "min": spaceRange[0],
             "max": spaceRange[1],
           },
-          "rent": {
+          "rent": rentUnspecified ? null : {
             "min": rentRange[0],
             "max": rentRange[1],
           },
-          "floor": {
+          "floor": floorUnspecified ? null : {
             "min": floorRange[0],
             "max": floorRange[1],
           },
@@ -255,99 +266,46 @@ export default function Filter({ onFilterChange }) {
       <Grid container spacing={2}>
 
         <FormGrid item xs={12}>
-          <FormLabel htmlFor="region">
-            Region
-          </FormLabel>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Select
-              labelId="demo-multiple-chip-label"
-              id="demo-multiple-chip"
-              multiple
-              displayEmpty
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 2 }}>
+            <MultipleSelectChip
+              label='Region'
+              options={regions}
               value={selectedRegion}
-              onChange={handleRegionChange}
-              input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-              renderValue={(selected) => (
-                selected.length === 0 ? (
-                  <em>Not Specified</em>
-                ) : (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => (
-                      <Chip key={value} label={value} />
-                    ))}
-                  </Box>
-                )
-              )}
-              MenuProps={MenuProps}
-              sx={{ flexGrow: 1 }}
+              onValueChange={(v) => setSelectedRegion(v)}
+              width="100%"
+            />
+
+            <Button 
+              variant="text" 
+              sx={{ whiteSpace: 'nowrap', flexShrink: 0 }} 
+              onClick={() => {setSelectedRegion([])}}
             >
-              <MenuItem disabled value="">
-                <em>Not Specified</em>
-              </MenuItem>
-              {regions.map((region) => (
-                <MenuItem
-                  key={region}
-                  value={region}
-                >
-                  {region}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button variant="text" sx={{ ml: 2}} onClick={() => {setSelectedRegion([])}}>
               Clear All
             </Button>
           </Box>
         </FormGrid>
 
         <FormGrid item xs={12}>
-          <FormLabel htmlFor="type">
-            Accomodation Type
-          </FormLabel>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Select
-              labelId="demo-multiple-chip-label"
-              id="demo-multiple-chip"
-              multiple
-              displayEmpty
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 2 }}>
+
+            <MultipleSelectChip
+              label='Accomodation Type'
+              options={types}
               value={selectedType}
-              onChange={handleTypeChange}
-              input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-              renderValue={(selected) => (
-                selected.length === 0 ? (
-                  <em>Not Specified</em>
-                ) : (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => (
-                      <Chip key={value} label={value} />
-                    ))}
-                  </Box>
-                )
-              )}
-              MenuProps={MenuProps}
-              sx={{ flexGrow: 1 }}
+              onValueChange={(v) => setSelectedType(v)}
+              width="100%"
+            />
+            <Button 
+              variant="text" 
+              sx={{ whiteSpace: 'nowrap', flexShrink: 0 }} 
+              onClick={() => {setSelectedType([]);}}
             >
-              <MenuItem disabled value="">
-                <em>Not Specified</em>
-              </MenuItem>
-              {types.map((type) => (
-                <MenuItem
-                  key={type}
-                  value={type}
-                >
-                  {type}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button variant="text" sx={{ ml: 2}} onClick={() => {setSelectedType([]);}}>
               Clear All
             </Button>
           </Box>
         </FormGrid>
 
         <FormGrid item xs={12}>
-          <FormLabel htmlFor="address">
-            Address
-          </FormLabel>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <TextField
                 margin="dense"
@@ -658,15 +616,15 @@ export default function Filter({ onFilterChange }) {
                     },
                     {
                       "label": "Living Space",
-                      "value": `${spaceRange[0]} m² ~ ${spaceRange[1]} m²`,
+                      "value": !spaceUnspecified ? `${spaceRange[0]} m² ~ ${spaceRange[1]} m²` : "Not Specified",
                     },
                     {
                       "label": "Monthly Rent",
-                      "value": `${rentRange[0]} SEK ~ ${rentRange[1]} SEK`,
+                      "value": !rentUnspecified ? `${rentRange[0]} SEK ~ ${rentRange[1]} SEK` : "Not Specified",
                     },
                     {
                       "label": "Floor",
-                      "value": `${floorRange[0]} ~ ${floorRange[1]}`,
+                      "value": ! floorUnspecified ? `${floorRange[0]} ~ ${floorRange[1]}`: "Not Specified",
                     },
                     {
                       "label": "Current Credit Days",
