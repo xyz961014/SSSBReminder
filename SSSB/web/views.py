@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import pytz
 import requests
 from pprint import pprint
@@ -42,7 +43,9 @@ class ApartmentStatusViewSet(viewsets.ModelViewSet):
 class PersonalFilterViewSet(viewsets.ModelViewSet):
     queryset = PersonalFilter.objects.all()
     serializer_class = PersonalFilterSerializer
+    filter_backends = [DjangoFilterBackend]
     filterset_fields = ['_id']
+
 
 class IndexView(TemplateView):
     template_name = 'index.html'
@@ -262,3 +265,33 @@ def unsubscribe_filter(request):
 
     return Response({'success': True, 'info': "Unsubscribed."})
 
+
+@api_view(['POST'])
+def edit_filter(request):
+    # Use request.data instead of request.POST
+    filter_data = request.data.get('filter_data')
+
+    # Ensure filter_data is not None
+    if not filter_data:
+        return Response({'error': 'Missing filter_data'}, status=400)
+
+    filter_id = filter_data.pop("filter_id", None)
+
+    if not filter_id:
+        return Response({'error': 'Missing filter_id'}, status=400)
+
+    try:
+        f = PersonalFilter.objects.get(_id=filter_id)
+    except PersonalFilter.DoesNotExist:
+        return Response({'error': 'Filter not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+    for key, value in filter_data.items():
+        if hasattr(f, key):
+            setattr(f, key, value)
+
+    f.save()
+    f.send_edit_mail()
+
+    return Response({'success': True, 'info': "Edited."})
