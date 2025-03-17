@@ -42,6 +42,7 @@ class ApartmentStatusViewSet(viewsets.ModelViewSet):
 class PersonalFilterViewSet(viewsets.ModelViewSet):
     queryset = PersonalFilter.objects.all()
     serializer_class = PersonalFilterSerializer
+    filterset_fields = ['_id']
 
 class IndexView(TemplateView):
     template_name = 'index.html'
@@ -247,3 +248,17 @@ def get_geocode(request):
     
     except requests.RequestException as e:
         return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def unsubscribe_filter(request):
+    filter_id = request.GET.get('filter_id')
+    try:
+        f = PersonalFilter.objects.get(_id=filter_id)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+    f.active = False
+    f.save()
+
+    return Response({'success': True, 'info': "Unsubscribed."})
+

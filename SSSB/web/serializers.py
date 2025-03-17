@@ -36,9 +36,9 @@ class ApartmentStatusSerializer(serializers.ModelSerializer):
 class PersonalFilterSerializer(serializers.ModelSerializer):
     regions = JSONSerializerField()
     types = JSONSerializerField()
-    living_space = JSONSerializerField()
-    rent = JSONSerializerField()
-    floor = JSONSerializerField()
+    living_space = JSONSerializerField(allow_null=True)
+    rent = JSONSerializerField(allow_null=True)
+    floor = JSONSerializerField(allow_null=True)
 
     class Meta:
         model = PersonalFilter

@@ -299,6 +299,7 @@ class PersonalFilter(SSSBItem):
             self.credit_start = credit_start
         else:
             self.credit_start = self.get_credit_start(current_credit)
+        self.current_credit = self.get_credit()
         self.regions = regions
         self.types = types
         self.address = address
@@ -326,8 +327,9 @@ class PersonalFilter(SSSBItem):
         start_date = datetime.strptime(self.credit_start, "%Y-%m-%d")
         start_date = datetime(start_date.year, start_date.month, start_date.day, 
                               tzinfo=sweden_timezone)
-        self.credit = (now_time - start_date).days
-        return self.credit
+        self.current_credit = (now_time - start_date).days
+        self.save()
+        return self.current_credit
 
     # def send_initial_mail(self):
     #     receivers = [self.email]

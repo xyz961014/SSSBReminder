@@ -7,6 +7,7 @@ from .views import get_regions, get_types
 from .views import get_space_range, get_rent_range, get_floor_range, get_credit_range
 from .views import get_filtered_apartments
 from .views import get_drawing, get_geocode
+from .views import unsubscribe_filter
 from .views import IndexView
 
 router = DefaultRouter()
@@ -26,4 +27,5 @@ urlpatterns = [
     path('get_filtered_apartments', get_filtered_apartments, name='get_filtered_apartments'),
     path('get_drawing', get_drawing, name='get_drawing'),
     path('get_geocode', get_geocode, name='get_geocode'),
+    path('unsubscribe_filter', unsubscribe_filter, name='unsubscribe_filter'),
 ]
