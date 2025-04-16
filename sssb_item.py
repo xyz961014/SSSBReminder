@@ -26,6 +26,8 @@ from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 from check_map import get_distance
 
+import ipdb
+
 class SSSBItem(object):
     def __init__(self):
         super().__init__()
@@ -160,7 +162,8 @@ class ApartmentInfo(SSSBItem):
     def is_active(self):
         sweden_timezone = pytz.timezone('Europe/Stockholm')
         now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
-        ddl = datetime.strptime(self.application_ddl, "%Y-%m-%d %H:%M:%S")
+        application_ddl = self.application_ddl.replace("24:00:00", "23:59:59")
+        ddl = datetime.strptime(application_ddl, "%Y-%m-%d %H:%M:%S")
         ddl_time = datetime(ddl.year, ddl.month, ddl.day, 
                             ddl.hour, ddl.minute, ddl.second,
                             tzinfo=sweden_timezone)
@@ -299,7 +302,7 @@ class PersonalFilter(SSSBItem):
             self.credit_start = credit_start
         else:
             self.credit_start = self.get_credit_start(current_credit)
-        self.current_credit = self.get_credit()
+        self.current_credit = self.get_credit(save=False)
         self.regions = regions
         self.types = types
         self.address = address
@@ -321,14 +324,15 @@ class PersonalFilter(SSSBItem):
         self.old_recommendations = recommendations
         self.recommendations = recommendations
 
-    def get_credit(self):
+    def get_credit(self, save=True):
         sweden_timezone = pytz.timezone('Europe/Stockholm')
         now_time = sweden_timezone.normalize(datetime.now().astimezone(tz=sweden_timezone))
         start_date = datetime.strptime(self.credit_start, "%Y-%m-%d")
         start_date = datetime(start_date.year, start_date.month, start_date.day, 
                               tzinfo=sweden_timezone)
         self.current_credit = (now_time - start_date).days
-        self.save()
+        if save:
+            self.save()
         return self.current_credit
 
     # def send_initial_mail(self):
