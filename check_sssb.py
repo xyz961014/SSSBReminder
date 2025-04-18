@@ -173,6 +173,13 @@ class SSSBWebSpider(object):
         else:
             # update apartment info
             info_item = ApartmentInfo.find_one({"object_number": object_number, "valid_from": valid_from})
+            info_item.url = url
+            info_item.monthly_rent = monthly_rent
+            info_item.end_date = end_date
+            info_item.application_ddl = ddl
+            info_item.electricity_include = url_item.electricity_include
+            info_item.rent_free_june_and_july = url_item.rent_free_june_and_july
+            info_item.max_4_years = url_item.max_4_years
             #if not hasattr(info_item, "distances") or info_item.distances is None or info_item.distances == {}:
             #    info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
 
