@@ -27,11 +27,12 @@ const ApartmentPage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const [objectNumber, setObjectNumber] = useState(searchParams.get('object_number'));
+  const [validFrom, setValidFrom] = useState(searchParams.get('valid_from'));
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchApartmentInfo(objectNumber);
+        const response = await fetchApartmentInfo(objectNumber, validFrom);
         if (response.data && response.data.length > 0) {
             setApartmentInfo(response.data[0]);
         }
@@ -41,7 +42,7 @@ const ApartmentPage = () => {
     };
     fetchData();
 
-  }, [objectNumber]);
+  }, [objectNumber, validFrom]);
 
   return (
     <div>
@@ -83,17 +84,17 @@ const ApartmentPage = () => {
                     height: 280,
                   }}
                 >
-                  <ApartmentBid object_number={objectNumber} />
+                  <ApartmentBid object_number={objectNumber} valid_from={validFrom} />
                 </Paper>
               </Grid>
               <Grid item xs={12} md={4} lg={3}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                  <ApartmentKeyInfo object_number={objectNumber} />
+                  <ApartmentKeyInfo object_number={objectNumber} valid_from={validFrom} />
                 </Paper>
               </Grid>
               <Grid item xs={12} md={8} lg={9}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                  <ApartmentInfo object_number={objectNumber} />
+                  <ApartmentInfo object_number={objectNumber} valid_from={validFrom} />
                 </Paper>
               </Grid>
               <Grid item xs={12}>

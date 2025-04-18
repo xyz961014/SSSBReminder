@@ -52,6 +52,7 @@ export default function EditFilter({ filterId, onFilterChange }) {
 
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState(true);
+  const [showExpired, setShowExpired] = useState(true);
 
   const [spaceUnspecified, setSpaceUnspecified] = useState(false);
   const [rentUnspecified, setRentUnspecified] = useState(false);
@@ -202,6 +203,7 @@ export default function EditFilter({ filterId, onFilterChange }) {
        summerFree,
        max4Years,
        shortRent,
+       showExpired,
      });
     }
   }, [
@@ -219,6 +221,7 @@ export default function EditFilter({ filterId, onFilterChange }) {
     summerFree,
     max4Years,
     shortRent,
+    showExpired,
     onFilterChange
   ]);
 
@@ -562,6 +565,19 @@ export default function EditFilter({ filterId, onFilterChange }) {
               <FormControlLabel value={''} control={<Radio />} label="Not Specified" disabled={!active}/>
             </RadioGroup>
           </Box>
+        </FormGrid>
+
+        <FormGrid item xs={12}>
+          <FormControlLabel 
+            control={
+              <Switch 
+                checked={showExpired}
+                onChange={(e) => setShowExpired(e.target.checked)}
+                inputProps={{ 'aria-label': 'controlled' }}
+              />
+            } 
+            label="Show Expired" 
+          />
         </FormGrid>
 
 

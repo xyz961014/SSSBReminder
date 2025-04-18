@@ -12,7 +12,7 @@ import Title from './Title';
 import LoadingBox from './LoadingBox';
 import { fetchApartmentInfo } from '../../Api'
 
-export default function ApartmentKeyInfo({ object_number }) {
+export default function ApartmentKeyInfo({ object_number, valid_from }) {
   const [loading, setLoading] = useState(true);
   const [apartmentInfo, setApartmentInfo] = useState({});
 
@@ -28,7 +28,7 @@ export default function ApartmentKeyInfo({ object_number }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetchApartmentInfo(object_number);
+        const response = await fetchApartmentInfo(object_number, valid_from);
         if (response.data && response.data.length > 0) {
             setApartmentInfo(response.data[0]);
         }
@@ -40,7 +40,7 @@ export default function ApartmentKeyInfo({ object_number }) {
     };
     fetchData();
 
-  }, [object_number]);
+  }, [object_number, valid_from]);
 
   return (
     <React.Fragment>

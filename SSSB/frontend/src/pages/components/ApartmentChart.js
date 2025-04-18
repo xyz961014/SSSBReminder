@@ -10,7 +10,7 @@ import LoadingBox from './LoadingBox';
 import { fetchApartmentStatus } from '../../Api'
 
 
-export default function ApartmentChart({ object_number }) {
+export default function ApartmentChart({ object_number, valid_from }) {
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [apartmentStatus, setApartmentStatus] = useState([]);
@@ -23,7 +23,7 @@ export default function ApartmentChart({ object_number }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetchApartmentStatus(object_number);
+        const response = await fetchApartmentStatus(object_number, valid_from);
         if (response.data && response.data.length > 0) {
             response.data.forEach((s) => {
                 if (s.update_time) {
@@ -41,7 +41,7 @@ export default function ApartmentChart({ object_number }) {
     };
     fetchData();
 
-  }, [object_number]);
+  }, [object_number, valid_from]);
 
   return (
     <React.Fragment>

@@ -27,7 +27,7 @@ const columns = [
     width: 250,
     renderCell: (params) => (
       <Box>
-      <Link href={`/apartment?object_number=${params.row.object_number}`} target="_blank" rel="noopener">
+      <Link href={`/apartment?object_number=${params.row.object_number}&valid_from=${moment.utc(params.row.valid_from).local().format('YYYY-MM-DD')}`} target="_blank" rel="noopener">
         {params.value}
       </Link>
       <Chip 

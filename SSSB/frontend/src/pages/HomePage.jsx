@@ -9,20 +9,15 @@ import MuiDrawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
 import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import Link from '@mui/material/Link';
 
 import Filter from './components/Filter';
 import EditFilter from './components/EditFilter';
 import Apartments from './components/Apartments';
-import { fetchApartmentAmount } from '../Api';
 
 
 const drawerWidth = 240;
@@ -106,26 +101,31 @@ const HomePage = () => {
           <AppBar 
             position="absolute"
           >
-            <Toolbar
-            >
-              <Typography
-                component="h1"
-                variant="h6"
+            <Toolbar>
+              <Link
+                href="/"
                 color="inherit"
-                noWrap
+                underline="none"
                 sx={{ flexGrow: 1 }}
               >
-                SSSB Reminder
-              </Typography>
+                <Typography
+                  component="h1"
+                  variant="h6"
+                  noWrap
+                >
+                  SSSB Reminder
+                </Typography>
+              </Link>
             </Toolbar>
           </AppBar>
         </Grid> 
         <Grid
           item
-          xs={5}
-          sm={4}
+          xs={12}
+          sm={12}
+          md={4}
           sx={{
-            display: { xs: 'none', md: 'flex' },
+            display: 'flex',
             flexDirection: 'column',
             backgroundColor: 'background.paper',
             borderRight: { sm: 'none', md: '1px solid' },
@@ -133,7 +133,7 @@ const HomePage = () => {
             alignItems: 'start',
             px: 4,
             gap: 4,
-            height: '100vh',
+            height: { xs: 'none', sm: 'none', md: '100vh' },
             overflow: 'auto',
           }}
         >
@@ -146,10 +146,11 @@ const HomePage = () => {
         </Grid>
         <Grid
           item
-          xs={7}
-          sm={8}
+          xs={12}
+          sm={12}
+          md={8}
           sx={{
-            display: { xs: 'none', md: 'flex' },
+            display: 'flex',
             flexDirection: 'column',
             alignItems: 'start',
             backgroundColor: (theme) =>
@@ -157,7 +158,7 @@ const HomePage = () => {
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900],
             flexGrow: 1,
-            height: '100vh',
+            height: { xs: 'none', sm: 'none', md: '100vh' },
             overflow: 'auto',
           }}
         >
@@ -166,7 +167,9 @@ const HomePage = () => {
           sx={{ width: "100%" }}
         >
           <Toolbar />
-          <Container sx={{ mt: 4, mb: 4 }}>
+          <Container 
+            sx={{ mt: { xs: 'none', sm: 'none', md: 4}, mb: { xs: 'none', sm: 'none', md: 4} }}
+          >
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>

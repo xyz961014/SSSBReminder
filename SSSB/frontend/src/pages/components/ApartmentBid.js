@@ -12,7 +12,7 @@ import Title from './Title';
 import LoadingBox from './LoadingBox';
 import { fetchApartmentInfo } from '../../Api'
 
-export default function ApartmentBid({ object_number }) {
+export default function ApartmentBid({ object_number, valid_from }) {
   const [loading, setLoading] = useState(true);
   const [apartmentInfo, setApartmentInfo] = useState({});
 
@@ -28,7 +28,7 @@ export default function ApartmentBid({ object_number }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetchApartmentInfo(object_number);
+        const response = await fetchApartmentInfo(object_number, valid_from);
         if (response.data && response.data.length > 0) {
             response.data[0].update_time = moment.utc(response.data[0].update_time).local().format('YYYY-MM-DD HH:mm');
             setApartmentInfo(response.data[0]);
@@ -42,7 +42,7 @@ export default function ApartmentBid({ object_number }) {
     };
     fetchData();
 
-  }, [object_number]);
+  }, [object_number, valid_from]);
 
   return (
     <React.Fragment>
