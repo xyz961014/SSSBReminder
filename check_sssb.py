@@ -143,10 +143,13 @@ class SSSBWebSpider(object):
          queue_len,
          most_credit) = self.get_url_info(url)
 
-        status_item = ApartmentStatus(object_number=object_number, queue_len=queue_len, most_credit=most_credit)
+        status_item = ApartmentStatus(object_number=object_number, 
+                                      valid_from=valid_from,
+                                      queue_len=queue_len, 
+                                      most_credit=most_credit)
         status_item.save()
 
-        if ApartmentInfo.find_one({"object_number": object_number}) is None:
+        if ApartmentInfo.find_one({"object_number": object_number, "valid_from": valid_from}) is None:
             # add new apartment
             info_item = ApartmentInfo(name=name,
                                       object_number=object_number,
@@ -166,12 +169,12 @@ class SSSBWebSpider(object):
                                       rent_free_june_and_july=url_item.rent_free_june_and_july,
                                       max_4_years=url_item.max_4_years
                                       )
-            info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
+            #info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
         else:
             # update apartment info
-            info_item = ApartmentInfo.find_one({"object_number": object_number})
-            if not hasattr(info_item, "distances") or info_item.distances is None or info_item.distances == {}:
-                info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
+            info_item = ApartmentInfo.find_one({"object_number": object_number, "valid_from": valid_from})
+            #if not hasattr(info_item, "distances") or info_item.distances is None or info_item.distances == {}:
+            #    info_item.get_distance("KTH", chromedriver_path=self.chromedriver_path, options=self.options)
 
         url_item.crawled = True
         url_item.save()

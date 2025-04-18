@@ -171,7 +171,7 @@ class ApartmentInfo(SSSBItem):
 
     def get_current_bid(self):
         bid = None
-        statuses = ApartmentStatus.find_many({"object_number": self.object_number},
+        statuses = ApartmentStatus.find_many({"object_number": self.object_number, "valid_from": self.valid_from},
                                              sort="update_time")
         if len(statuses) > 0:
             last_status = statuses[-1]
@@ -264,10 +264,11 @@ class ApartmentInfo(SSSBItem):
 
 class ApartmentStatus(SSSBItem):
     _collection = db["apartment_status"]
-    def __init__(self, object_number, queue_len, most_credit, **kwargs):
+    def __init__(self, object_number, valid_from, queue_len, most_credit, **kwargs):
         super().__init__()
         self._collection = db["apartment_status"]
         self.object_number = object_number
+        self.valid_from = valid_from
         self.queue_len = queue_len
         self.most_credit = most_credit
 

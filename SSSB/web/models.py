@@ -359,6 +359,7 @@ class ApartmentStatus(models.Model):
     _id = ObjectIdField(primary_key=True, default=None)
     update_time = StringDateTimeFieldUTC(null=True, blank=True, default=None)
     object_number = models.CharField(max_length=255, null=True, blank=True, default=None)
+    valid_from = models.CharField(max_length=255, null=True, blank=True, default=None)
     queue_len = models.IntegerField(null=True, blank=True, default=None)
     most_credit = models.IntegerField(null=True, blank=True, default=None)
 

@@ -31,14 +31,14 @@ class ApartmentInfoViewSet(viewsets.ModelViewSet):
     serializer_class = ApartmentInfoSerializer
     permission_classes = [ReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['object_number']
+    filterset_fields = ['object_number', "valid_from"]
 
 class ApartmentStatusViewSet(viewsets.ModelViewSet):
     queryset = ApartmentStatus.objects.all()
     serializer_class = ApartmentStatusSerializer
     permission_classes = [ReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['object_number']
+    filterset_fields = ['object_number', 'valid_from']
 
 class PersonalFilterViewSet(viewsets.ModelViewSet):
     queryset = PersonalFilter.objects.all()
