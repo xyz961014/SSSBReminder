@@ -72,7 +72,7 @@ const ApartmentPage = () => {
                     height: 280,
                   }}
                 >
-                  <ApartmentChart object_number={objectNumber} />
+                  <ApartmentChart object_number={objectNumber} valid_from={validFrom} />
                 </Paper>
               </Grid>
               <Grid item xs={12} md={4} lg={3}>

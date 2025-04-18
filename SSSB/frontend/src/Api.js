@@ -19,7 +19,7 @@ export const createFilter = (filterDict) => API.post('api/personal_filter/', fil
 export const editFilter = (filterDict) => API.post('edit_personal_filter', {"filter_data": filterDict});
 
 export const fetchApartmentInfo = (object_number, valid_from) => API.get(`api/apartment_info/?object_number=${object_number}&valid_from=${valid_from}`);
-export const fetchApartmentStatus = (object_number) => API.get(`api/apartment_status/?object_number=${object_number}`);
+export const fetchApartmentStatus = (object_number, valid_from) => API.get(`api/apartment_status/?object_number=${object_number}&valid_from=${valid_from}`);
 export const fetchFilterData = (filterId) => API.get(`api/personal_filter/?_id=${filterId}`);
 export const unsubscribeFilter = (filterId) => API.get(`unsubscribe_filter?filter_id=${filterId}`);
 
