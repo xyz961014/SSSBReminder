@@ -264,7 +264,7 @@ class ApartmentInfo(SSSBItem):
 
 class ApartmentStatus(SSSBItem):
     _collection = db["apartment_status"]
-    def __init__(self, object_number, valid_from, queue_len, most_credit, **kwargs):
+    def __init__(self, object_number, valid_from=None, queue_len=0, most_credit=0, **kwargs):
         super().__init__()
         self._collection = db["apartment_status"]
         self.object_number = object_number
