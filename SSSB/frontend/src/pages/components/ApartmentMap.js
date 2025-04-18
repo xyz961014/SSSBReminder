@@ -15,7 +15,7 @@ const containerStyle = {
 const GOOGLE_MAPS_API_KEY = "AIzaSyDJCEBjiueduWAhWQrUBa1RvBe5kWRDG9o";
 const GOOGLE_MAP_ID = "475d469c6b759722";
 
-export default function ApartmentMap({ object_number }) {
+export default function ApartmentMap({ object_number, valid_from }) {
   const [loading, setLoading] = useState(true);
   const [apartmentInfo, setApartmentInfo] = useState({});
   const mapRef = useRef(null);
@@ -30,7 +30,7 @@ export default function ApartmentMap({ object_number }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetchApartmentInfo(object_number);
+        const response = await fetchApartmentInfo(object_number, valid_from);
         if (response.data && response.data.length > 0) {
           setApartmentInfo(response.data[0]);
           try {
@@ -67,7 +67,7 @@ export default function ApartmentMap({ object_number }) {
     };
     fetchData();
 
-  }, [object_number]);
+  }, [object_number, valid_from]);
 
   useEffect(() => {
     if (markerRef.current && mapRef.current) {

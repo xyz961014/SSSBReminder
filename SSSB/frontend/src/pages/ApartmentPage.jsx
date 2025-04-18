@@ -99,7 +99,7 @@ const ApartmentPage = () => {
               </Grid>
               <Grid item xs={12}>
                 <Paper sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
-                  <ApartmentMap object_number={objectNumber} />
+                  <ApartmentMap object_number={objectNumber} valid_from={validFrom} />
                 </Paper>
               </Grid>
               <Grid item md={6} xs={12}>
