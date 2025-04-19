@@ -99,6 +99,7 @@ const PDFViewer = ({ pdfUrl, title }) => {
             <Viewer
                 fileUrl={pdfUrl}
                 plugins={[defaultLayoutPluginInstance]}
+                //defaultScale={1.0}
             />
         ) : (
             <Box 

@@ -102,20 +102,21 @@ const HomePage = () => {
             position="absolute"
           >
             <Toolbar>
-              <Link
-                href="/"
-                color="inherit"
-                underline="none"
-                sx={{ flexGrow: 1 }}
-              >
+
                 <Typography
                   component="h1"
                   variant="h6"
                   noWrap
+                >              
+                <Link
+                  href="/"
+                  color="inherit"
+                  underline="none"
+                  sx={{ flexGrow: 1 }}
                 >
                   SSSB Reminder
+                </Link>
                 </Typography>
-              </Link>
             </Toolbar>
           </AppBar>
         </Grid> 
