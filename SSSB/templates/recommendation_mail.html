@@ -120,7 +120,7 @@
                                     <th>DDL</th>
                                   </tr> {% for item in new_recommendations %} <tr style="background-color:{% if loop.index0 % 2 == 0 %}#f9f9f9{% else %}#ffffff{% endif %};">
                                     <td>
-                                      <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}" style="color:#007BFF; text-decoration:none;">
+                                      <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}&valid_from={{ item.valid_from }}" style="color:#007BFF; text-decoration:none;">
                                         {{ item.name }}
                                       </a>
                                       <br />
@@ -150,7 +150,7 @@
                                     <th>DDL</th>
                                   </tr> {% for item in unchange_recommendations %} <tr style="background-color:{% if loop.index0 % 2 == 0 %}#f9f9f9{% else %}#ffffff{% endif %};">
                                     <td>
-                                      <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}" style="color:#007BFF; text-decoration:none;">
+                                      <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}&valid_from={{ item.valid_from }}" style="color:#007BFF; text-decoration:none;">
                                         {{ item.name }}
                                       </a>
                                       <br />
@@ -180,7 +180,7 @@
                                     <th>DDL</th>
                                   </tr> {% for item in old_recommendations %} <tr style="background-color:{% if loop.index0 % 2 == 0 %}#f9f9f9{% else %}#ffffff{% endif %};">
                                     <td>
-                                      <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}" style="color:#007BFF; text-decoration:none;">
+                                      <a href="https://sssbreminder.xyzs.app/apartment?object_number={{ item.object_number }}&valid_from={{ item.valid_from }}" style="color:#007BFF; text-decoration:none;">
                                         {{ item.name }}
                                       </a>
                                       <br />
