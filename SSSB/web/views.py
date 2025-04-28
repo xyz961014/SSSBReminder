@@ -186,7 +186,7 @@ def get_filtered_apartments(request):
         credit_min = filter_data["creditRange"][0]
         credit_max = filter_data["creditRange"][1]
         filtered_apartments = [a for a in filtered_apartments 
-                               if a.bid is None or credit_min < a.bid['most_credit'] < credit_max]
+                               if a.bid is None or credit_min <= a.bid['most_credit'] <= credit_max]
 
     #credits = [a.bid for a in filtered_apartments]
     #pprint(filtered_apartments[0].application_ddl)
