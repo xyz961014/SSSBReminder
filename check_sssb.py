@@ -22,6 +22,7 @@ from tqdm import tqdm
 from pathlib import Path
 import base64
 import emoji
+from urllib.parse import urlparse, parse_qs
 
 from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus, ApartmentAmount
 from sssb_item import PersonalFilter
@@ -58,8 +59,9 @@ def parse_args():
 
 class SSSBWebSpider(object):
     def __init__(self, chromedriver_path, options):
-        self.apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/available-apartments/?pagination=0&paginationantal=0"
-        self.new_apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/new-constructions/?pagination=0&paginationantal=0"
+        #self.apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/available-apartments/?pagination=0&paginationantal=0"
+        #self.new_apartments_url = "https://sssb.se/en/looking-for-housing/apply-for-apartment/new-constructions/?pagination=0&paginationantal=0"
+        self.apartments_url = "https://minasidor.sssb.se/en/available-apartments/?pagination=0&paginationantal=0"
         self.chromedriver_path = chromedriver_path
         self.options = options
         service = ChromeService(executable_path=chromedriver_path)
@@ -68,32 +70,37 @@ class SSSBWebSpider(object):
         self.apartment_urls = []
 
     def get_urls(self):
-        amount1 = self.get_apartment_urls(self.apartments_url)
-        amount2 = self.get_apartment_urls(self.new_apartments_url)
-        apartment_amount = ApartmentAmount(amount=amount1+amount2)
+        amount = self.get_apartment_urls(self.apartments_url)
+        apartment_amount = ApartmentAmount(amount=amount)
         apartment_amount.save()
 
     def get_apartment_urls(self, url):
         self.browser.get(url)
         print("Successfully open url {}".format(url))
         # close questionarie window
-        try:
-            self.wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="WSA_LB2"]')))
-            close_button = self.browser.find_element(by="xpath", value='//*[@id="WSA_LB2"]')
-            close_button.click()
-        except:
-            print("No questionarie window")
-        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'Objektlistabilder')))
-        available_apartments_area = self.browser.find_element(by="class name", value="Objektlistabilder")
-        available_apartments = available_apartments_area.find_elements(by="class name", value="ObjektListItem")
+        #try:
+        #    self.wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="WSA_LB2"]')))
+        #    close_button = self.browser.find_element(by="xpath", value='//*[@id="WSA_LB2"]')
+        #    close_button.click()
+        #except:
+        #    print("No questionarie window")
+        self.wait.until(EC.visibility_of_element_located((By.ID, 'apartmentList')))
+        available_apartments_area = self.browser.find_element(by="id", value="apartmentList")
+        available_apartments = available_apartments_area.find_elements(by="class name", value="row")
         for apartment in tqdm(available_apartments, desc="Getting urls"):
             try:
-                name_area = apartment.find_element(by="class name", value="ObjektTyp")
+                name_area = apartment.find_element(by="class name", value="apt-title")
                 link = name_area.find_element(by="tag name", value="a")
                 apartment_url = link.get_attribute("href")
-                electricity_tag = len(apartment.find_elements(by="class name", value="Egenskap-1036")) > 0
-                free_june_july_tag = len(apartment.find_elements(by="class name", value="Egenskap-3025")) > 0
-                max_4_years_tag = len(apartment.find_elements(by="class name", value="Egenskap-1093")) > 0
+                tags = apartment.find_elements(by="class name", value="rent-type")
+                electricity_tag, free_june_july_tag, max_4_years_tag = False, False, False
+                for tag in tags:
+                    if tag.text == 'Electricity included':
+                        electricity_tag = True
+                    if tag.text == "10 mån hyra":
+                        free_june_july_tag = True
+                    if tag.text == "Max 4 years":
+                        max_4_years_tag = True
                 url_object = ApartmentURL(url=apartment_url, 
                                           crawled=False,
                                           electricity_include=electricity_tag,
@@ -198,18 +205,30 @@ class SSSBWebSpider(object):
         self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'h1')))
         title = self.browser.find_element(by="tag name", value="h1")
         name = title.text
+        address = name
 
-        self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'em')))
-        subtitle_content = self.browser.find_element(by="tag name", value="em")
-        object_number = subtitle_content.text
+        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'apt-address')))
+        subtitle = self.browser.find_element(by="class name", value="apt-address")
+        accommodation_type = subtitle.text
 
-        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'ObjektDetaljer')))
-        attributes_area = self.browser.find_element(by="class name", value="ObjektDetaljer")
-        attribute_keys = attributes_area.find_elements(by="tag name", value="dt")
-        attribute_values = attributes_area.find_elements(by="tag name", value="dd")
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+        object_number = query_params.get('refid', [None])[0]
+
+        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'property-details')))
+        attributes_area = self.browser.find_element(by="class name", value="property-details")
+        attribute_key_columns = attributes_area.find_elements(by="class name", value="apt-details-headers")
+        attribute_value_columns = attributes_area.find_elements(by="class name", value="apt-details-data")
+        attribute_keys = []
+        for key_column in attribute_key_columns:
+            attribute_keys.extend(key_column.find_elements(by="tag name", value="li"))
+        attribute_values = []
+        for value_column in attribute_value_columns:
+            attribute_values.extend(value_column.find_elements(by="tag name", value="li"))
+
         attributes = {key.text: value.text for key, value in list(zip(attribute_keys, attribute_values))}
 
-        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'ObjektDokument')))
+        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'pdf-links')))
         drawing_area = self.browser.find_element(by="class name", value="ObjektDokument")
         buttons = drawing_area.find_elements(by="class name", value="btn")
         apartment_drawing, floor_drawing = None, None
@@ -220,9 +239,9 @@ class SSSBWebSpider(object):
                 resource_name = "./resources/{}_{}.pdf".format(object_number, button_name) 
                 if not os.path.exists(resource_name):
                     r = requests.get(button_url, verify=False) 
-                    if button_name == "APARTMENT DRAWING":
+                    if button_name.upper() == "APARTMENT DRAWING":
                         apartment_drawing = resource_name 
-                    elif button_name == "FLOOR DRAWING":
+                    elif button_name.upper() == "FLOOR DRAWING":
                         floor_drawing = resource_name 
                     with open(resource_name, "wb") as code:
                          code.write(r.content)
@@ -246,10 +265,7 @@ class SSSBWebSpider(object):
         ddl_date, ddl_time = ddl_sentence.split()[-3], ddl_sentence.split()[-1]
         ddl = "{} {}:00".format(ddl_date, ddl_time)
 
-        housing_area = attributes["Housing area:"] if "Housing area:" in attributes.keys() else None
-        address = attributes["Address:"] if "Address:" in attributes.keys() else None
-        accommodation_type = attributes["Type of accommodation:"]  \
-                             if "Type of accommodation:" in attributes.keys() else None
+        housing_area = attributes["Area:"] if "Area:" in attributes.keys() else None
 
         living_space = attributes["Living space:"] \
                        if "Living space:" in attributes.keys() else None
@@ -259,13 +275,12 @@ class SSSBWebSpider(object):
 
         floor = attributes["Floor:"] if "Floor:" in attributes.keys() else None
 
-        monthly_rent = attributes["Monthly rent:"] if "Monthly rent:" in attributes.keys() else None
+        monthly_rent = attributes["Rent:"] if "Rent:" in attributes.keys() else None
         if monthly_rent is not None:
             monthly_rent = re.sub("[^0-9]", "", monthly_rent)
             monthly_rent = int(monthly_rent)
 
-        valid_from = attributes["The rental agreement is valid from:"] \
-                     if "The rental agreement is valid from:" in attributes.keys() else None
+        valid_from = attributes["Moving in:"] if "Moving in:" in attributes.keys() else None
         end_date = attributes["The rental agreement ends:"] \
                    if "The rental agreement ends:" in attributes.keys() else None
 
@@ -369,7 +384,7 @@ def main(args):
     current_dir = Path(__file__).parent
     if args.local:
         chrome_path = (current_dir / 'chrome-linux64/chrome').as_posix()
-        chrome_path = (current_dir / 'chrome-headless-shell-linux64/chrome-headless-shell').as_posix()
+        #chrome_path = (current_dir / 'chrome-headless-shell-linux64/chrome-headless-shell').as_posix()
         chromedriver_path = (current_dir / 'chromedriver-linux64/chromedriver').as_posix()
         service = ChromeService(executable_path=chromedriver_path)
 
