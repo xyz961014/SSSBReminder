@@ -217,7 +217,7 @@ def get_drawing(request):
     if "object_number" in request.GET:
         object_number = request.GET["object_number"]
     if "drawing_type" in request.GET:
-        drawing_type = request.GET["drawing_type"]
+        drawing_type = request.GET["drawing_type"].upper()
 
     file_path = app_dir / "resources" / f"{object_number}_{drawing_type} DRAWING.pdf"
 

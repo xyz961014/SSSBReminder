@@ -232,7 +232,7 @@ class SSSBWebSpider(object):
         apartment_drawing, floor_drawing = None, None
         try:
             for button in buttons:
-                button_name = button.text
+                button_name = button.text.upper()
                 button_url = button.get_attribute("href")
                 resource_name = "./resources/{}_{}.pdf".format(object_number, button_name) 
                 if not os.path.exists(resource_name):
