@@ -22,7 +22,7 @@ from tqdm import tqdm
 from pathlib import Path
 import base64
 import emoji
-from urllib.parse import urlparse, parse_qs
+import hashlib
 
 from sssb_item import ApartmentURL, ApartmentInfo, ApartmentStatus, ApartmentAmount
 from sssb_item import PersonalFilter
@@ -206,14 +206,12 @@ class SSSBWebSpider(object):
         title = self.browser.find_element(by="tag name", value="h1")
         name = title.text
         address = name
+        object_number = hashlib.sha256(name.encode()).hexdigest()
 
         self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'apt-address')))
         subtitle = self.browser.find_element(by="class name", value="apt-address")
         accommodation_type = subtitle.text
 
-        parsed_url = urlparse(url)
-        query_params = parse_qs(parsed_url.query)
-        object_number = query_params.get('refid', [None])[0]
 
         self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'property-details')))
         attributes_area = self.browser.find_element(by="class name", value="property-details")
